@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import '../theme/habit_colors.dart';
 
 class ConfettiOverlay extends StatefulWidget {
@@ -15,8 +15,22 @@ class ConfettiOverlay extends StatefulWidget {
 class _ConfettiOverlayState extends State<ConfettiOverlay>
     with TickerProviderStateMixin {
   late AnimationController _controller;
-  final _particles = <_ConfettiParticle>[];
+  final _particles = <_Sparkle>[];
   final _rng = Random();
+
+  final _sparkleColors = [
+    const Color(0xFFFFD700), // gold
+    const Color(0xFFFF69B4), // hot pink
+    const Color(0xFF00FFFF), // cyan
+    const Color(0xFFFF4500), // orange red
+    const Color(0xFF7FFF00), // chartreuse
+    const Color(0xFFFF00FF), // magenta
+    const Color(0xFF00BFFF), // deep sky blue
+    const Color(0xFFFFD700), // gold
+    const Color(0xFFFF1493), // deep pink
+    const Color(0xFFADFF2F), // green yellow
+    Colors.white,
+  ];
 
   @override
   void initState() {
@@ -42,16 +56,32 @@ class _ConfettiOverlayState extends State<ConfettiOverlay>
 
   void _burst() {
     _particles.clear();
-    for (var i = 0; i < 40; i++) {
-      _particles.add(_ConfettiParticle(
-        x: 0.5 + (_rng.nextDouble() - 0.5) * 0.8,
-        y: -0.1,
-        color: HabitColors.accentColors[_rng.nextInt(HabitColors.accentColors.length)],
-        size: 4 + _rng.nextDouble() * 6,
-        velocityX: (_rng.nextDouble() - 0.5) * 0.4,
-        velocityY: 0.3 + _rng.nextDouble() * 0.5,
+    // Stars
+    for (var i = 0; i < 100; i++) {
+      _particles.add(_Sparkle(
+        x: 0.3 + _rng.nextDouble() * 0.4,
+        y: -0.15 - _rng.nextDouble() * 0.15,
+        color: _sparkleColors[_rng.nextInt(_sparkleColors.length)],
+        size: 10 + _rng.nextDouble() * 8,
+        velocityX: (_rng.nextDouble() - 0.5) * 0.6,
+        velocityY: 0.4 + _rng.nextDouble() * 0.6,
         rotation: _rng.nextDouble() * 6.28,
-        rotationSpeed: (_rng.nextDouble() - 0.5) * 6,
+        rotationSpeed: (_rng.nextDouble() - 0.5) * 8,
+        type: _rng.nextDouble() > 0.5 ? _SparkleType.star : _SparkleType.sparkle,
+      ));
+    }
+    // Small dots / sparkle dust
+    for (var i = 0; i < 125; i++) {
+      _particles.add(_Sparkle(
+        x: 0.4 + _rng.nextDouble() * 0.2,
+        y: -0.05 - _rng.nextDouble() * 0.1,
+        color: Colors.white.withValues(alpha: 0.7 + _rng.nextDouble() * 0.3),
+        size: 1.5 + _rng.nextDouble() * 2.5,
+        velocityX: (_rng.nextDouble() - 0.5) * 0.3,
+        velocityY: 0.5 + _rng.nextDouble() * 0.4,
+        rotation: 0,
+        rotationSpeed: 0,
+        type: _SparkleType.dot,
       ));
     }
     _controller.reset();
@@ -86,14 +116,17 @@ class _ConfettiOverlayState extends State<ConfettiOverlay>
   }
 }
 
-class _ConfettiParticle {
+enum _SparkleType { star, sparkle, dot }
+
+class _Sparkle {
   final double x, y;
   final Color color;
   final double size;
   final double velocityX, velocityY;
   final double rotation, rotationSpeed;
+  final _SparkleType type;
 
-  _ConfettiParticle({
+  _Sparkle({
     required this.x,
     required this.y,
     required this.color,
@@ -102,11 +135,12 @@ class _ConfettiParticle {
     required this.velocityY,
     required this.rotation,
     required this.rotationSpeed,
+    required this.type,
   });
 }
 
 class _ConfettiPainter extends CustomPainter {
-  final List<_ConfettiParticle> particles;
+  final List<_Sparkle> particles;
   final double progress;
 
   _ConfettiPainter(this.particles, this.progress);
@@ -116,26 +150,81 @@ class _ConfettiPainter extends CustomPainter {
     for (final p in particles) {
       final px = (p.x + p.velocityX * progress * 2) * size.width;
       final py = (p.y + p.velocityY * progress * 2) * size.height;
-      if (py > size.height + 20 || py < -20) continue;
+      if (py > size.height + 30 || py < -30) continue;
 
       canvas.save();
       canvas.translate(px, py);
       canvas.rotate(p.rotation + p.rotationSpeed * progress);
 
-      final fadeOut = progress > 0.7 ? (1 - (progress - 0.7) / 0.3) : 1.0;
+      // Glow effect
+      final glowPaint = Paint()
+        ..color = p.color.withValues(alpha: 0.2 * (1 - progress))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      canvas.drawCircle(Offset.zero, p.size * 0.8, glowPaint);
+
+      final fadeOut = progress > 0.6 ? (1 - (progress - 0.6) / 0.4) : 1.0;
+      final alpha = (p.color.alpha * fadeOut / 255).clamp(0.0, 1.0);
       final paint = Paint()
-        ..color = p.color.withValues(alpha: fadeOut)
+        ..color = p.color.withValues(alpha: alpha)
         ..style = PaintingStyle.fill;
 
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.6),
-          const Radius.circular(2),
-        ),
-        paint,
-      );
+      switch (p.type) {
+        case _SparkleType.star:
+          _drawStar(canvas, Offset.zero, p.size, paint);
+          break;
+        case _SparkleType.sparkle:
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                center: Offset.zero,
+                width: p.size,
+                height: p.size * 0.4,
+              ),
+              const Radius.circular(2),
+            ),
+            paint,
+          );
+          // Second perpendicular strip for a sparkle cross
+          canvas.rotate(1.57);
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                center: Offset.zero,
+                width: p.size * 0.7,
+                height: p.size * 0.4,
+              ),
+              const Radius.circular(2),
+            ),
+            paint,
+          );
+          break;
+        case _SparkleType.dot:
+          canvas.drawCircle(Offset.zero, p.size * 0.5, paint);
+          break;
+      }
+
       canvas.restore();
     }
+  }
+
+  void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    final points = 4;
+    final outer = size / 2;
+    final inner = size / 5;
+    for (var i = 0; i < points * 2; i++) {
+      final radius = i.isEven ? outer : inner;
+      final angle = pi * 2 * i / (points * 2) - pi / 2;
+      final x = center.dx + radius * cos(angle);
+      final y = center.dy + radius * sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    canvas.drawPath(path, paint);
   }
 
   @override
