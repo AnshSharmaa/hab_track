@@ -139,6 +139,28 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
     requiredDuringInsert: false,
     defaultValue: Constant(0),
   );
+  static const VerificationMeta _emojiMeta = const VerificationMeta('emoji');
+  @override
+  late final GeneratedColumn<String> emoji = GeneratedColumn<String>(
+    'emoji',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('✅'),
+  );
+  static const VerificationMeta _colorIndexMeta = const VerificationMeta(
+    'colorIndex',
+  );
+  @override
+  late final GeneratedColumn<int> colorIndex = GeneratedColumn<int>(
+    'color_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -154,6 +176,8 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
     updatedAt,
     sortOrder,
     isArchived,
+    emoji,
+    colorIndex,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -257,6 +281,18 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
         isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
       );
     }
+    if (data.containsKey('emoji')) {
+      context.handle(
+        _emojiMeta,
+        emoji.isAcceptableOrUnknown(data['emoji']!, _emojiMeta),
+      );
+    }
+    if (data.containsKey('color_index')) {
+      context.handle(
+        _colorIndexMeta,
+        colorIndex.isAcceptableOrUnknown(data['color_index']!, _colorIndexMeta),
+      );
+    }
     return context;
   }
 
@@ -318,6 +354,14 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
         DriftSqlType.int,
         data['${effectivePrefix}is_archived'],
       )!,
+      emoji: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}emoji'],
+      )!,
+      colorIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_index'],
+      )!,
     );
   }
 
@@ -341,6 +385,8 @@ class Habit extends DataClass implements Insertable<Habit> {
   final int updatedAt;
   final int sortOrder;
   final int isArchived;
+  final String emoji;
+  final int colorIndex;
   const Habit({
     required this.id,
     required this.userId,
@@ -355,6 +401,8 @@ class Habit extends DataClass implements Insertable<Habit> {
     required this.updatedAt,
     required this.sortOrder,
     required this.isArchived,
+    required this.emoji,
+    required this.colorIndex,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -382,6 +430,8 @@ class Habit extends DataClass implements Insertable<Habit> {
     map['updated_at'] = Variable<int>(updatedAt);
     map['sort_order'] = Variable<int>(sortOrder);
     map['is_archived'] = Variable<int>(isArchived);
+    map['emoji'] = Variable<String>(emoji);
+    map['color_index'] = Variable<int>(colorIndex);
     return map;
   }
 
@@ -408,6 +458,8 @@ class Habit extends DataClass implements Insertable<Habit> {
       updatedAt: Value(updatedAt),
       sortOrder: Value(sortOrder),
       isArchived: Value(isArchived),
+      emoji: Value(emoji),
+      colorIndex: Value(colorIndex),
     );
   }
 
@@ -430,6 +482,8 @@ class Habit extends DataClass implements Insertable<Habit> {
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       isArchived: serializer.fromJson<int>(json['isArchived']),
+      emoji: serializer.fromJson<String>(json['emoji']),
+      colorIndex: serializer.fromJson<int>(json['colorIndex']),
     );
   }
   @override
@@ -449,6 +503,8 @@ class Habit extends DataClass implements Insertable<Habit> {
       'updatedAt': serializer.toJson<int>(updatedAt),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'isArchived': serializer.toJson<int>(isArchived),
+      'emoji': serializer.toJson<String>(emoji),
+      'colorIndex': serializer.toJson<int>(colorIndex),
     };
   }
 
@@ -466,6 +522,8 @@ class Habit extends DataClass implements Insertable<Habit> {
     int? updatedAt,
     int? sortOrder,
     int? isArchived,
+    String? emoji,
+    int? colorIndex,
   }) => Habit(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -480,6 +538,8 @@ class Habit extends DataClass implements Insertable<Habit> {
     updatedAt: updatedAt ?? this.updatedAt,
     sortOrder: sortOrder ?? this.sortOrder,
     isArchived: isArchived ?? this.isArchived,
+    emoji: emoji ?? this.emoji,
+    colorIndex: colorIndex ?? this.colorIndex,
   );
   Habit copyWithCompanion(HabitsCompanion data) {
     return Habit(
@@ -502,6 +562,10 @@ class Habit extends DataClass implements Insertable<Habit> {
       isArchived: data.isArchived.present
           ? data.isArchived.value
           : this.isArchived,
+      emoji: data.emoji.present ? data.emoji.value : this.emoji,
+      colorIndex: data.colorIndex.present
+          ? data.colorIndex.value
+          : this.colorIndex,
     );
   }
 
@@ -520,7 +584,9 @@ class Habit extends DataClass implements Insertable<Habit> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('isArchived: $isArchived')
+          ..write('isArchived: $isArchived, ')
+          ..write('emoji: $emoji, ')
+          ..write('colorIndex: $colorIndex')
           ..write(')'))
         .toString();
   }
@@ -540,6 +606,8 @@ class Habit extends DataClass implements Insertable<Habit> {
     updatedAt,
     sortOrder,
     isArchived,
+    emoji,
+    colorIndex,
   );
   @override
   bool operator ==(Object other) =>
@@ -557,7 +625,9 @@ class Habit extends DataClass implements Insertable<Habit> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.sortOrder == this.sortOrder &&
-          other.isArchived == this.isArchived);
+          other.isArchived == this.isArchived &&
+          other.emoji == this.emoji &&
+          other.colorIndex == this.colorIndex);
 }
 
 class HabitsCompanion extends UpdateCompanion<Habit> {
@@ -574,6 +644,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
   final Value<int> updatedAt;
   final Value<int> sortOrder;
   final Value<int> isArchived;
+  final Value<String> emoji;
+  final Value<int> colorIndex;
   final Value<int> rowid;
   const HabitsCompanion({
     this.id = const Value.absent(),
@@ -589,6 +661,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     this.updatedAt = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.emoji = const Value.absent(),
+    this.colorIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   HabitsCompanion.insert({
@@ -605,6 +679,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     required int updatedAt,
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.emoji = const Value.absent(),
+    this.colorIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -626,6 +702,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     Expression<int>? updatedAt,
     Expression<int>? sortOrder,
     Expression<int>? isArchived,
+    Expression<String>? emoji,
+    Expression<int>? colorIndex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -642,6 +720,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (isArchived != null) 'is_archived': isArchived,
+      if (emoji != null) 'emoji': emoji,
+      if (colorIndex != null) 'color_index': colorIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -660,6 +740,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     Value<int>? updatedAt,
     Value<int>? sortOrder,
     Value<int>? isArchived,
+    Value<String>? emoji,
+    Value<int>? colorIndex,
     Value<int>? rowid,
   }) {
     return HabitsCompanion(
@@ -676,6 +758,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
       updatedAt: updatedAt ?? this.updatedAt,
       sortOrder: sortOrder ?? this.sortOrder,
       isArchived: isArchived ?? this.isArchived,
+      emoji: emoji ?? this.emoji,
+      colorIndex: colorIndex ?? this.colorIndex,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -722,6 +806,12 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     if (isArchived.present) {
       map['is_archived'] = Variable<int>(isArchived.value);
     }
+    if (emoji.present) {
+      map['emoji'] = Variable<String>(emoji.value);
+    }
+    if (colorIndex.present) {
+      map['color_index'] = Variable<int>(colorIndex.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -744,6 +834,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
           ..write('updatedAt: $updatedAt, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isArchived: $isArchived, ')
+          ..write('emoji: $emoji, ')
+          ..write('colorIndex: $colorIndex, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2287,6 +2379,8 @@ typedef $$HabitsTableCreateCompanionBuilder =
       required int updatedAt,
       Value<int> sortOrder,
       Value<int> isArchived,
+      Value<String> emoji,
+      Value<int> colorIndex,
       Value<int> rowid,
     });
 typedef $$HabitsTableUpdateCompanionBuilder =
@@ -2304,6 +2398,8 @@ typedef $$HabitsTableUpdateCompanionBuilder =
       Value<int> updatedAt,
       Value<int> sortOrder,
       Value<int> isArchived,
+      Value<String> emoji,
+      Value<int> colorIndex,
       Value<int> rowid,
     });
 
@@ -2400,6 +2496,16 @@ class $$HabitsTableFilterComposer extends Composer<_$AppDb, $HabitsTable> {
 
   ColumnFilters<int> get isArchived => $composableBuilder(
     column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get emoji => $composableBuilder(
+    column: $table.emoji,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorIndex => $composableBuilder(
+    column: $table.colorIndex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2501,6 +2607,16 @@ class $$HabitsTableOrderingComposer extends Composer<_$AppDb, $HabitsTable> {
     column: $table.isArchived,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get emoji => $composableBuilder(
+    column: $table.emoji,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get colorIndex => $composableBuilder(
+    column: $table.colorIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$HabitsTableAnnotationComposer extends Composer<_$AppDb, $HabitsTable> {
@@ -2553,6 +2669,14 @@ class $$HabitsTableAnnotationComposer extends Composer<_$AppDb, $HabitsTable> {
 
   GeneratedColumn<int> get isArchived => $composableBuilder(
     column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get emoji =>
+      $composableBuilder(column: $table.emoji, builder: (column) => column);
+
+  GeneratedColumn<int> get colorIndex => $composableBuilder(
+    column: $table.colorIndex,
     builder: (column) => column,
   );
 
@@ -2623,6 +2747,8 @@ class $$HabitsTableTableManager
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> isArchived = const Value.absent(),
+                Value<String> emoji = const Value.absent(),
+                Value<int> colorIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitsCompanion(
                 id: id,
@@ -2638,6 +2764,8 @@ class $$HabitsTableTableManager
                 updatedAt: updatedAt,
                 sortOrder: sortOrder,
                 isArchived: isArchived,
+                emoji: emoji,
+                colorIndex: colorIndex,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2655,6 +2783,8 @@ class $$HabitsTableTableManager
                 required int updatedAt,
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> isArchived = const Value.absent(),
+                Value<String> emoji = const Value.absent(),
+                Value<int> colorIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitsCompanion.insert(
                 id: id,
@@ -2670,6 +2800,8 @@ class $$HabitsTableTableManager
                 updatedAt: updatedAt,
                 sortOrder: sortOrder,
                 isArchived: isArchived,
+                emoji: emoji,
+                colorIndex: colorIndex,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

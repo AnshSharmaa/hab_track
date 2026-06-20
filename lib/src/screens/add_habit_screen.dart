@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../db/app_db.dart';
 import '../providers.dart';
 import '../repositories/habit_repository.dart';
 import '../services/habit_notification_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/habit_colors.dart';
 
 class AddHabitScreen extends ConsumerStatefulWidget {
   const AddHabitScreen({super.key, this.existingHabit});
@@ -21,6 +23,9 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
   String _habitType = 'end_of_day';
   TimeOfDay? _reminderTime;
   bool _saving = false;
+  String _selectedEmoji = '✅';
+  int _colorIndex = 0;
+  bool _showEmojiPicker = false;
 
   @override
   void initState() {
@@ -40,15 +45,11 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           (_habitType == 'end_of_day'
               ? const TimeOfDay(hour: 21, minute: 0)
               : null);
+      _selectedEmoji = existing.emoji;
+      _colorIndex = existing.colorIndex;
     } else {
       _selectedDays.addAll(const [
-        'mon',
-        'tue',
-        'wed',
-        'thu',
-        'fri',
-        'sat',
-        'sun',
+        'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun',
       ]);
       _habitType = 'end_of_day';
       _reminderTime = const TimeOfDay(hour: 21, minute: 0);
@@ -97,6 +98,27 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           24,
         ),
         children: [
+          _SectionLabel('ICON & COLOR'),
+          const SizedBox(height: 10),
+          // Emoji and color picker
+          _EmojiColorPicker(
+            selectedEmoji: _selectedEmoji,
+            colorIndex: _colorIndex,
+            expanded: _showEmojiPicker,
+            onToggle: () => setState(() => _showEmojiPicker = !_showEmojiPicker),
+            onEmojiSelected: (e) {
+              setState(() {
+                _selectedEmoji = e;
+                _showEmojiPicker = false;
+              });
+              HapticFeedback.selectionClick();
+            },
+            onColorSelected: (c) {
+              setState(() => _colorIndex = c);
+              HapticFeedback.selectionClick();
+            },
+          ),
+          const SizedBox(height: 20),
           _SectionLabel('HABIT DETAILS'),
           const SizedBox(height: 10),
           _DarkField(
@@ -222,6 +244,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           recurrenceDays: _selectedDays.toList(),
           habitType: _habitType,
           reminderTime: _reminderTime == null ? null : _fmt24(_reminderTime!),
+          emoji: _selectedEmoji,
+          colorIndex: _colorIndex,
         );
       } else {
         final oldHabit = widget.existingHabit!;
@@ -235,6 +259,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           recurrenceDays: _selectedDays.toList(),
           habitType: _habitType,
           reminderTime: _reminderTime == null ? null : _fmt24(_reminderTime!),
+          emoji: _selectedEmoji,
+          colorIndex: _colorIndex,
         );
         final latestHabits = await repo.getAllHabits(ref.read(userIdProvider));
         habitForNotification = latestHabits.firstWhere(
@@ -313,15 +339,178 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
   }
 }
 
+class _EmojiColorPicker extends StatelessWidget {
+  final String selectedEmoji;
+  final int colorIndex;
+  final bool expanded;
+  final VoidCallback onToggle;
+  final ValueChanged<String> onEmojiSelected;
+  final ValueChanged<int> onColorSelected;
+
+  const _EmojiColorPicker({
+    required this.selectedEmoji,
+    required this.colorIndex,
+    required this.expanded,
+    required this.onToggle,
+    required this.onEmojiSelected,
+    required this.onColorSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final currentColor = HabitColors.getColor(colorIndex);
+    return Container(
+      decoration: AppDecorations.glassCard(),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: currentColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: currentColor.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(selectedEmoji, style: const TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Choose icon & color',
+                    style: TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(
+                      Icons.expand_more_rounded,
+                      color: AppColors.textSubtle,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'EMOJI',
+                    style: TextStyle(
+                      color: AppColors.textSubtle,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: HabitColors.defaultEmojis.map((e) => GestureDetector(
+                      onTap: () => onEmojiSelected(e),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: selectedEmoji == e
+                              ? currentColor.withValues(alpha: 0.2)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selectedEmoji == e
+                                ? currentColor.withValues(alpha: 0.5)
+                                : AppColors.borderGlass,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(e, style: const TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'COLOR',
+                    style: TextStyle(
+                      color: AppColors.textSubtle,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: List.generate(
+                      HabitColors.accentColors.length,
+                      (i) => GestureDetector(
+                        onTap: () => onColorSelected(i),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: HabitColors.getColor(i),
+                            shape: BoxShape.circle,
+                            border: colorIndex == i
+                                ? Border.all(
+                                    color: Colors.white,
+                                    width: 2.5,
+                                  )
+                                : null,
+                            boxShadow: colorIndex == i
+                                ? [
+                                    BoxShadow(
+                                      color: HabitColors.getColor(i).withValues(alpha: 0.5),
+                                      blurRadius: 8,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            crossFadeState: expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 const _weekdayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const _weekdayLabels = {
-  'mon': 'Mon',
-  'tue': 'Tue',
-  'wed': 'Wed',
-  'thu': 'Thu',
-  'fri': 'Fri',
-  'sat': 'Sat',
-  'sun': 'Sun',
+  'mon': 'Mon', 'tue': 'Tue', 'wed': 'Wed',
+  'thu': 'Thu', 'fri': 'Fri', 'sat': 'Sat', 'sun': 'Sun',
 };
 
 class _SectionLabel extends StatelessWidget {

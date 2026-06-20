@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -6,6 +7,8 @@ import '../providers.dart';
 import '../repositories/habit_repository.dart';
 import '../utils/date_utils.dart';
 import '../theme/app_theme.dart';
+import '../theme/habit_colors.dart';
+import '../widgets/achievement_badge.dart';
 import 'add_habit_screen.dart';
 import 'add_medication_screen.dart';
 
@@ -16,6 +19,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPhone = isPhoneWidth(context);
     final overviewAsync = ref.watch(homeOverviewProvider);
+    final statsAsync = ref.watch(habitStatsProvider);
 
     final today = DateFormat('EEEE, MMM d').format(DateTime.now());
     final hour = DateTime.now().hour;
@@ -58,6 +62,53 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             _dailyProgress(overviewAsync),
             const SizedBox(height: 12),
+            // Badge summary row
+            statsAsync.when(
+              data: (stats) {
+                final badges = stats.values
+                    .where((s) => s.currentStreak >= 7)
+                    .length;
+                if (badges == 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: AppDecorations.glassCard(),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$badges active badge${badges == 1 ? '' : 's'}',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        ...stats.entries
+                            .where((e) => e.value.currentStreak >= 7)
+                            .take(3)
+                            .map((e) => Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: AchievementBadge(
+                                streak: e.value.currentStreak,
+                                size: 24,
+                              ),
+                            )),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: AppDecorations.glassCard(elevated: true),
@@ -67,11 +118,14 @@ class HomeScreen extends ConsumerWidget {
                     child: _QuickAction(
                       label: 'Add habit',
                       icon: Icons.add_task_rounded,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const AddHabitScreen(),
-                        ),
-                      ),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AddHabitScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -79,11 +133,14 @@ class HomeScreen extends ConsumerWidget {
                     child: _QuickAction(
                       label: 'Add med',
                       icon: Icons.medication_rounded,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const AddMedicationScreen(),
-                        ),
-                      ),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AddMedicationScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -118,6 +175,8 @@ class HomeScreen extends ConsumerWidget {
                         title: habit.title,
                         subtitle: (habit.notes ?? '').trim(),
                         done: doneIds.contains(habit.id),
+                        emoji: habit.emoji,
+                        colorIndex: habit.colorIndex,
                       ),
                     ),
                     ...overview.medications.map((med) {
@@ -134,6 +193,8 @@ class HomeScreen extends ConsumerWidget {
                         times: med.times.length,
                         scheduleTimes: med.times,
                         done: allTaken,
+                        emoji: '💊',
+                        colorIndex: 0,
                       );
                     }),
                   ];
@@ -206,6 +267,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Future<void> _toggleEntry(WidgetRef ref, _HomeEntry entry) async {
+    HapticFeedback.mediumImpact();
     if (entry.type == _HomeEntryType.habit) {
       final repo = await ref.read(habitRepositoryProvider.future);
       await repo.toggleHabitInstance(entry.id, todayIso());
@@ -279,24 +341,47 @@ class _HomeItemCard extends StatelessWidget {
         ? (entry.done ? 'Completed' : 'Pending')
         : '${entry.times} reminder${entry.times == 1 ? '' : 's'}';
     final statusColor = isHabit && entry.done
-        ? AppColors.success
+        ? HabitColors.getColor(entry.colorIndex)
         : AppColors.textMuted;
+    final accentColor = HabitColors.getColor(entry.colorIndex);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: AppDecorations.glassCard(elevated: true),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderGlass),
+        gradient: entry.done
+            ? LinearGradient(
+                colors: [
+                  accentColor.withValues(alpha: 0.12),
+                  accentColor.withValues(alpha: 0.03),
+                ],
+              )
+            : null,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: onToggle,
             child: Container(
-              width: 30,
-              height: 30,
-              decoration: AppDecorations.glassChip(selected: entry.done),
-              child: Icon(
-                isHabit ? Icons.check_circle_rounded : Icons.medication_rounded,
-                size: 16,
-                color: entry.done ? AppColors.success : AppColors.accentSoft,
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: entry.done
+                    ? accentColor.withValues(alpha: 0.15)
+                    : AppColors.surfaceGlassSoft,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: entry.done
+                      ? accentColor.withValues(alpha: 0.4)
+                      : AppColors.borderGlass,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  entry.emoji,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ),
@@ -307,10 +392,14 @@ class _HomeItemCard extends StatelessWidget {
               children: [
                 Text(
                   entry.title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: entry.done
+                        ? accentColor
+                        : AppColors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
+                    decoration: entry.done ? TextDecoration.lineThrough : null,
+                    decorationColor: accentColor.withValues(alpha: 0.5),
                   ),
                 ),
                 if (entry.subtitle.trim().isNotEmpty)
@@ -435,6 +524,8 @@ class _HomeEntry {
     required this.done,
     required this.times,
     required this.scheduleTimes,
+    required this.emoji,
+    required this.colorIndex,
   });
 
   factory _HomeEntry.habit({
@@ -442,6 +533,8 @@ class _HomeEntry {
     required String title,
     required String subtitle,
     required bool done,
+    String emoji = '✅',
+    int colorIndex = 0,
   }) {
     return _HomeEntry._(
       type: _HomeEntryType.habit,
@@ -451,6 +544,8 @@ class _HomeEntry {
       done: done,
       times: 0,
       scheduleTimes: const [],
+      emoji: emoji,
+      colorIndex: colorIndex,
     );
   }
 
@@ -461,6 +556,8 @@ class _HomeEntry {
     required int times,
     required List<String> scheduleTimes,
     required bool done,
+    String emoji = '💊',
+    int colorIndex = 0,
   }) {
     return _HomeEntry._(
       type: _HomeEntryType.med,
@@ -470,6 +567,8 @@ class _HomeEntry {
       done: done,
       times: times,
       scheduleTimes: scheduleTimes,
+      emoji: emoji,
+      colorIndex: colorIndex,
     );
   }
 
@@ -480,4 +579,6 @@ class _HomeEntry {
   final bool done;
   final int times;
   final List<String> scheduleTimes;
+  final String emoji;
+  final int colorIndex;
 }

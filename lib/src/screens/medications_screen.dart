@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers.dart';
@@ -64,11 +65,14 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen> {
                     ],
                   ),
                   _AddButton(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AddMedicationScreen(),
-                      ),
-                    ),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AddMedicationScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

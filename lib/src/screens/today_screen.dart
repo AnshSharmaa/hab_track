@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 import '../db/app_db.dart';
 import '../providers.dart';
 import '../repositories/habit_repository.dart';
 import '../services/habit_notification_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/habit_colors.dart';
 import '../utils/date_utils.dart';
+import '../widgets/ring_progress.dart';
+import '../widgets/confetti_overlay.dart';
+import '../widgets/achievement_badge.dart';
 import 'add_habit_screen.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
@@ -17,6 +23,9 @@ class TodayScreen extends ConsumerStatefulWidget {
 }
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
+  String? _justCompletedHabitId;
+  bool _showConfetti = false;
+
   @override
   Widget build(BuildContext context) {
     final isPhone = isPhoneWidth(context);
@@ -110,8 +119,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                         )
                         .toList();
                     if (visibleHabits.isEmpty) {
-                      return _EmptyState(
-                        icon: Icons.check_circle_outline_rounded,
+                      return _EmptyStateLottie(
                         message: 'No habits for today',
                         sub: 'Create a habit or adjust recurrence days.',
                       );
@@ -119,57 +127,64 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                     final doneIds = doneHabits.map((h) => h.id).toSet();
                     return todayInstancesAsync.when(
                       data: (instanceMap) => statsAsync.when(
-                        data: (statsMap) => ReorderableListView.builder(
-                          padding: EdgeInsets.fromLTRB(
-                            isPhone ? 12 : 24,
-                            0,
-                            isPhone ? 12 : 24,
-                            32,
-                          ),
-                          buildDefaultDragHandles: false,
-                          itemCount: visibleHabits.length,
-                          onReorder: (oldIndex, newIndex) async {
-                            final repo = await ref.read(
-                              habitRepositoryProvider.future,
-                            );
-                            final reordered = [...visibleHabits];
-                            if (newIndex > oldIndex) newIndex -= 1;
-                            final item = reordered.removeAt(oldIndex);
-                            reordered.insert(newIndex, item);
+                        data: (statsMap) => ConfettiOverlay(
+                          show: _showConfetti,
+                          child: ReorderableListView.builder(
+                            padding: EdgeInsets.fromLTRB(
+                              isPhone ? 12 : 24,
+                              0,
+                              isPhone ? 12 : 24,
+                              32,
+                            ),
+                            buildDefaultDragHandles: false,
+                            itemCount: visibleHabits.length,
+                            onReorder: (oldIndex, newIndex) async {
+                              final repo = await ref.read(
+                                habitRepositoryProvider.future,
+                              );
+                              final reordered = [...visibleHabits];
+                              if (newIndex > oldIndex) newIndex -= 1;
+                              final item = reordered.removeAt(oldIndex);
+                              reordered.insert(newIndex, item);
 
-                            final visibleIds = reordered
-                                .map((h) => h.id)
-                                .toSet();
-                            final remaining = allHabits.where(
-                              (h) => !visibleIds.contains(h.id),
-                            );
-                            final finalOrder = [
-                              ...reordered,
-                              ...remaining,
-                            ].map((h) => h.id).toList();
+                              final visibleIds = reordered
+                                  .map((h) => h.id)
+                                  .toSet();
+                              final remaining = allHabits.where(
+                                (h) => !visibleIds.contains(h.id),
+                              );
+                              final finalOrder = [
+                                ...reordered,
+                                ...remaining,
+                              ].map((h) => h.id).toList();
 
-                            await repo.reorderHabits(finalOrder);
-                            ref.invalidate(habitsListProvider);
-                            ref.invalidate(todayHabitsProvider);
-                          },
-                          itemBuilder: (context, index) {
-                            final habit = visibleHabits[index];
-                            final stat = statsMap[habit.id];
-                            final note = instanceMap[habit.id]?.note ?? '';
-                            return Padding(
-                              key: ValueKey(habit.id),
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: _ReorderActivator(
-                                index: index,
-                                child: _HabitCard(
-                                  habit: habit,
-                                  isDone: doneIds.contains(habit.id),
-                                  stats: stat,
-                                  note: note,
+                              await repo.reorderHabits(finalOrder);
+                              ref.invalidate(habitsListProvider);
+                              ref.invalidate(todayHabitsProvider);
+                            },
+                            itemBuilder: (context, index) {
+                              final habit = visibleHabits[index];
+                              final stat = statsMap[habit.id];
+                              final note = instanceMap[habit.id]?.note ?? '';
+                              final justCompleted =
+                                  _justCompletedHabitId == habit.id;
+                              return Padding(
+                                key: ValueKey(habit.id),
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: _ReorderActivator(
+                                  index: index,
+                                  child: _HabitCard(
+                                    habit: habit,
+                                    isDone: doneIds.contains(habit.id),
+                                    justCompleted: justCompleted,
+                                    stats: stat,
+                                    note: note,
+                                    onToggle: () => _toggleHabit(habit),
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                         loading: () => const Center(child: _Loader()),
                         error: (_, _) => const Center(
@@ -210,78 +225,137 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       ),
     );
   }
+
+  Future<void> _toggleHabit(Habit habit) async {
+    final repo = await ref.read(habitRepositoryProvider.future);
+    final wasDone = ref.read(todayHabitsProvider).asData?.value.contains(habit) ?? false;
+
+    await repo.toggleHabitInstance(habit.id, todayIso());
+    HapticFeedback.mediumImpact();
+
+    if (!wasDone) {
+      setState(() {
+        _justCompletedHabitId = habit.id;
+        _showConfetti = true;
+      });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() {
+          _justCompletedHabitId = null;
+          _showConfetti = false;
+        });
+      });
+    }
+
+    ref.invalidate(todayHabitsProvider);
+    ref.invalidate(todayHabitInstancesProvider);
+    ref.invalidate(habitStatsProvider);
+  }
 }
 
 class _HabitCard extends ConsumerWidget {
+  final Habit habit;
+  final bool isDone;
+  final bool justCompleted;
+  final HabitStats? stats;
+  final String note;
+  final VoidCallback onToggle;
+
   const _HabitCard({
     required this.habit,
     required this.isDone,
+    this.justCompleted = false,
     required this.stats,
     required this.note,
+    required this.onToggle,
   });
-  final Habit habit;
-  final bool isDone;
-  final HabitStats? stats;
-  final String note;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorIndex = habit.colorIndex;
+    final emoji = habit.emoji;
+    final habitColor = HabitColors.getColor(colorIndex);
+
     return GestureDetector(
-      onTap: () async {
-        final repo = await ref.read(habitRepositoryProvider.future);
-        await repo.toggleHabitInstance(habit.id, todayIso());
-        ref.invalidate(todayHabitsProvider);
-      },
+      onTap: onToggle,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration:
-            (isDone
-                    ? AppDecorations.glassCard()
-                    : AppDecorations.glassCard(elevated: true))
-                .copyWith(
-                  border: Border.all(
-                    color: isDone
-                        ? AppColors.success.withValues(alpha: 0.55)
-                        : AppColors.borderGlass,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDone
+                ? habitColor.withValues(alpha: 0.55)
+                : AppColors.borderGlass,
+          ),
+          gradient: isDone
+              ? LinearGradient(
+                  colors: [
+                    habitColor.withValues(alpha: 0.20),
+                    habitColor.withValues(alpha: 0.05),
+                  ],
+                )
+              : HabitColors.habitGradient(colorIndex),
+          boxShadow: isDone
+              ? [
+                  BoxShadow(
+                    color: habitColor.withValues(alpha: 0.15),
+                    blurRadius: 12,
+                    spreadRadius: -4,
                   ),
-                ),
+                ]
+              : [
+                  BoxShadow(
+                    color: habitColor.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+        ),
         child: Row(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: isDone ? AppColors.success : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDone ? AppColors.success : AppColors.border,
-                  width: 2,
-                ),
+            // Ring progress
+            RingProgress(
+              progress: isDone ? 1.0 : 0.0,
+              size: 36,
+              strokeWidth: 3,
+              colorIndex: colorIndex,
+              child: Text(
+                emoji,
+                style: TextStyle(fontSize: justCompleted ? 18 : 14),
               ),
-              child: isDone
-                  ? const Icon(
-                      Icons.check_rounded,
-                      color: AppColors.textPrimary,
-                      size: 15,
-                    )
-                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    habit.title,
-                    style: TextStyle(
-                      color: isDone ? AppColors.success : AppColors.textPrimary,
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w600,
-                      decoration: isDone ? TextDecoration.lineThrough : null,
-                      decorationColor: AppColors.success,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          habit.title,
+                          style: TextStyle(
+                            color: isDone
+                                ? habitColor
+                                : AppColors.textPrimary,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w600,
+                            decoration: isDone ? TextDecoration.lineThrough : null,
+                            decorationColor: habitColor.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                      if (stats != null && stats!.currentStreak >= 7)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: AchievementBadge(
+                            streak: stats!.currentStreak,
+                            size: 22,
+                          ),
+                        ),
+                    ],
                   ),
                   if (note.trim().isNotEmpty)
                     Padding(
@@ -307,8 +381,8 @@ class _HabitCard extends ConsumerWidget {
                   children: [
                     Text(
                       '🔥 ${stats!.currentStreak}',
-                      style: const TextStyle(
-                        color: AppColors.accentSoft,
+                      style: TextStyle(
+                        color: habitColor.withValues(alpha: 0.8),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -319,11 +393,17 @@ class _HabitCard extends ConsumerWidget {
             if (isDone)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: AppDecorations.glassChip(selected: true),
-                child: const Text(
+                decoration: BoxDecoration(
+                  color: habitColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(99),
+                  border: Border.all(
+                    color: habitColor.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
                   'Done',
                   style: TextStyle(
-                    color: AppColors.success,
+                    color: habitColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -449,13 +529,16 @@ class _HabitCard extends ConsumerWidget {
 }
 
 class _AddButton extends StatelessWidget {
-  const _AddButton({required this.onTap});
   final VoidCallback onTap;
+  const _AddButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: Container(
         width: 110,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -480,15 +563,11 @@ class _AddButton extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.icon,
-    required this.message,
-    required this.sub,
-  });
-  final IconData icon;
+class _EmptyStateLottie extends StatelessWidget {
   final String message;
   final String sub;
+
+  const _EmptyStateLottie({required this.message, required this.sub});
 
   @override
   Widget build(BuildContext context) {
@@ -496,8 +575,15 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 48, color: AppColors.surfaceAlt),
-          const SizedBox(height: 16),
+          SizedBox(
+            width: 140,
+            height: 140,
+            child: Lottie.network(
+              'https://assets5.lottiefiles.com/packages/lf20_n48jwtqr.json',
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             message,
             style: const TextStyle(
@@ -530,10 +616,10 @@ class _Loader extends StatelessWidget {
 }
 
 class _ReorderActivator extends StatelessWidget {
-  const _ReorderActivator({required this.index, required this.child});
-
   final int index;
   final Widget child;
+
+  const _ReorderActivator({required this.index, required this.child});
 
   @override
   Widget build(BuildContext context) {

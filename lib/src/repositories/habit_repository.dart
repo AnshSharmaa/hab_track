@@ -50,6 +50,8 @@ class HabitRepository {
     List<String>? recurrenceDays,
     String habitType = 'end_of_day',
     String? reminderTime,
+    String emoji = '✅',
+    int colorIndex = 0,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     final nextSortOrder = await db.getNextHabitSortOrder();
@@ -64,6 +66,8 @@ class HabitRepository {
       unit: Value('times'),
       recurrence: Value(recurrence),
       reminderTime: Value(reminderTime),
+      emoji: Value(emoji),
+      colorIndex: Value(colorIndex),
       createdAt: now,
       updatedAt: now,
       sortOrder: Value(nextSortOrder),
@@ -80,16 +84,29 @@ class HabitRepository {
     List<String>? recurrenceDays,
     String? habitType,
     String? reminderTime,
+    String? emoji,
+    int? colorIndex,
   }) async {
-    final updated = habit.copyWith(
-      title: title,
-      notes: Value(notes),
-      type: habitType ?? habit.type,
-      recurrence: Value(_encodeRecurrence(recurrenceDays)),
-      reminderTime: Value(reminderTime),
-      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await db.updateHabitEntry(
+      HabitsCompanion(
+        id: Value(habit.id),
+        userId: Value(habit.userId),
+        title: Value(title),
+        notes: Value(notes),
+        type: Value(habitType ?? habit.type),
+        target: Value(habit.target),
+        unit: Value(habit.unit),
+        recurrence: Value(_encodeRecurrence(recurrenceDays)),
+        reminderTime: Value(reminderTime),
+        emoji: Value(emoji ?? habit.emoji),
+        colorIndex: Value(colorIndex ?? habit.colorIndex),
+        createdAt: Value(habit.createdAt),
+        updatedAt: Value(now),
+        sortOrder: Value(habit.sortOrder),
+        isArchived: Value(habit.isArchived),
+      ),
     );
-    await db.updateHabitEntry(updated);
   }
 
   Future<void> deleteHabit(String habitId) async {

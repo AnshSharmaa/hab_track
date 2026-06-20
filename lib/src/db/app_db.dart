@@ -23,6 +23,8 @@ class Habits extends Table {
   IntColumn get updatedAt => integer()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   IntColumn get isArchived => integer().withDefault(Constant(0))();
+  TextColumn get emoji => text().withDefault(const Constant('✅'))();
+  IntColumn get colorIndex => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -83,7 +85,7 @@ class AppDb extends _$AppDb {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -105,6 +107,14 @@ class AppDb extends _$AppDb {
       }
       if (from < 4) {
         await m.addColumn(habits, habits.reminderTime);
+      }
+      if (from < 5) {
+        await customStatement(
+          "ALTER TABLE habits ADD COLUMN emoji TEXT NOT NULL DEFAULT '✅'",
+        );
+        await customStatement(
+          'ALTER TABLE habits ADD COLUMN color_index INTEGER NOT NULL DEFAULT 0',
+        );
       }
     },
   );
