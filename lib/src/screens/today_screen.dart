@@ -239,10 +239,12 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
         _showConfetti = true;
       });
       Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) setState(() {
+        if (mounted) {
+          setState(() {
           _justCompletedHabitId = null;
           _showConfetti = false;
         });
+        }
       });
     }
 

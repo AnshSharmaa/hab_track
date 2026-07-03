@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../theme/habit_colors.dart';
 
 class ConfettiOverlay extends StatefulWidget {
   final Widget child;
