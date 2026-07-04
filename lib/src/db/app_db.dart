@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 
 part 'app_db.g.dart';
 
-// TABLES: habits, habit_instances, medications, medication_logs
+// TABLES: habits, habit_instances, medications, medication_logs, goals
 class Habits extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
@@ -74,7 +74,24 @@ class MedicationLogs extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Habits, HabitInstances, Medications, MedicationLogs])
+class Goals extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get title => text()();
+  TextColumn get habitId => text()();
+  IntColumn get targetDays => integer()();
+  TextColumn get rewardTitle => text()();
+  TextColumn get rewardDescription => text().nullable()();
+  TextColumn get rewardImageUrl => text().nullable()();
+  IntColumn get isArchived => integer().withDefault(const Constant(0))();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Habits, HabitInstances, Medications, MedicationLogs, Goals])
 class AppDb extends _$AppDb {
   AppDb._(super.e);
 
@@ -85,7 +102,7 @@ class AppDb extends _$AppDb {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -115,6 +132,9 @@ class AppDb extends _$AppDb {
         await customStatement(
           'ALTER TABLE habits ADD COLUMN color_index INTEGER NOT NULL DEFAULT 0',
         );
+      }
+      if (from < 6) {
+        await m.createTable(goals);
       }
     },
   );

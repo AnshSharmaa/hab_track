@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'goals_screen.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
 import 'medications_screen.dart';
@@ -21,6 +22,7 @@ class _AppShellState extends State<AppShell> {
     final pages = [
       const HomeScreen(),
       const TodayScreen(),
+      const GoalsScreen(),
       const MedicationsScreen(),
       const HistoryScreen(),
     ];
@@ -73,6 +75,10 @@ class _AppShellState extends State<AppShell> {
                     NavigationDestination(
                       icon: Icon(Icons.check_circle_outline_rounded),
                       label: 'Habits',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.emoji_events_rounded),
+                      label: 'Goals',
                     ),
                     NavigationDestination(
                       icon: Icon(Icons.medication_rounded),
@@ -161,17 +167,24 @@ class _Sidebar extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 _NavItem(
-                  icon: Icons.medication_rounded,
-                  label: 'Meds',
+                  icon: Icons.emoji_events_rounded,
+                  label: 'Goals',
                   selected: selectedIndex == 2,
                   onTap: () => onSelect(2),
                 ),
                 const SizedBox(height: 4),
                 _NavItem(
-                  icon: Icons.insights_rounded,
-                  label: 'History',
+                  icon: Icons.medication_rounded,
+                  label: 'Meds',
                   selected: selectedIndex == 3,
                   onTap: () => onSelect(3),
+                ),
+                const SizedBox(height: 4),
+                _NavItem(
+                  icon: Icons.insights_rounded,
+                  label: 'History',
+                  selected: selectedIndex == 4,
+                  onTap: () => onSelect(4),
                 ),
               ],
             ),

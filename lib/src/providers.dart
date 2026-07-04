@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'db/app_db.dart';
+import 'repositories/goal_repository.dart';
 import 'repositories/habit_repository.dart';
 import 'repositories/medication_repository.dart';
 import 'utils/date_utils.dart';
@@ -69,6 +70,11 @@ final habitHistoryProvider =
       return repo.getHabitHistoryByDays(userId, days);
     });
 
+final goalRepositoryProvider = FutureProvider<GoalRepository>((ref) async {
+  final db = await ref.watch(appDbProvider.future);
+  return GoalRepository(db);
+});
+
 final medicationRepositoryProvider = FutureProvider<MedicationRepository>((
   ref,
 ) async {
@@ -107,6 +113,12 @@ final medicationLogsHistoryProvider =
         toIsoDate(end),
       );
     });
+
+final goalsProvider = FutureProvider<List<Goal>>((ref) async {
+  final repo = await ref.watch(goalRepositoryProvider.future);
+  final userId = ref.watch(userIdProvider);
+  return repo.getAllGoals(userId);
+});
 
 final homeOverviewProvider = FutureProvider<HomeOverviewData>((ref) async {
   final habits = await ref.watch(habitsListProvider.future);
