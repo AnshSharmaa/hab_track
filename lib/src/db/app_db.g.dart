@@ -2345,6 +2345,683 @@ class MedicationLogsCompanion extends UpdateCompanion<MedicationLog> {
   }
 }
 
+class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GoalsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _habitIdMeta = const VerificationMeta(
+    'habitId',
+  );
+  @override
+  late final GeneratedColumn<String> habitId = GeneratedColumn<String>(
+    'habit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetDaysMeta = const VerificationMeta(
+    'targetDays',
+  );
+  @override
+  late final GeneratedColumn<int> targetDays = GeneratedColumn<int>(
+    'target_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rewardTitleMeta = const VerificationMeta(
+    'rewardTitle',
+  );
+  @override
+  late final GeneratedColumn<String> rewardTitle = GeneratedColumn<String>(
+    'reward_title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rewardDescriptionMeta = const VerificationMeta(
+    'rewardDescription',
+  );
+  @override
+  late final GeneratedColumn<String> rewardDescription =
+      GeneratedColumn<String>(
+        'reward_description',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _rewardImageUrlMeta = const VerificationMeta(
+    'rewardImageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> rewardImageUrl = GeneratedColumn<String>(
+    'reward_image_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<int> isArchived = GeneratedColumn<int>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    title,
+    habitId,
+    targetDays,
+    rewardTitle,
+    rewardDescription,
+    rewardImageUrl,
+    isArchived,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'goals';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Goal> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('habit_id')) {
+      context.handle(
+        _habitIdMeta,
+        habitId.isAcceptableOrUnknown(data['habit_id']!, _habitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_habitIdMeta);
+    }
+    if (data.containsKey('target_days')) {
+      context.handle(
+        _targetDaysMeta,
+        targetDays.isAcceptableOrUnknown(data['target_days']!, _targetDaysMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetDaysMeta);
+    }
+    if (data.containsKey('reward_title')) {
+      context.handle(
+        _rewardTitleMeta,
+        rewardTitle.isAcceptableOrUnknown(
+          data['reward_title']!,
+          _rewardTitleMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_rewardTitleMeta);
+    }
+    if (data.containsKey('reward_description')) {
+      context.handle(
+        _rewardDescriptionMeta,
+        rewardDescription.isAcceptableOrUnknown(
+          data['reward_description']!,
+          _rewardDescriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reward_image_url')) {
+      context.handle(
+        _rewardImageUrlMeta,
+        rewardImageUrl.isAcceptableOrUnknown(
+          data['reward_image_url']!,
+          _rewardImageUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Goal map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Goal(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      habitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habit_id'],
+      )!,
+      targetDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_days'],
+      )!,
+      rewardTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reward_title'],
+      )!,
+      rewardDescription: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reward_description'],
+      ),
+      rewardImageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reward_image_url'],
+      ),
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}is_archived'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GoalsTable createAlias(String alias) {
+    return $GoalsTable(attachedDatabase, alias);
+  }
+}
+
+class Goal extends DataClass implements Insertable<Goal> {
+  final String id;
+  final String userId;
+  final String title;
+  final String habitId;
+  final int targetDays;
+  final String rewardTitle;
+  final String? rewardDescription;
+  final String? rewardImageUrl;
+  final int isArchived;
+  final int createdAt;
+  final int updatedAt;
+  const Goal({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.habitId,
+    required this.targetDays,
+    required this.rewardTitle,
+    this.rewardDescription,
+    this.rewardImageUrl,
+    required this.isArchived,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['title'] = Variable<String>(title);
+    map['habit_id'] = Variable<String>(habitId);
+    map['target_days'] = Variable<int>(targetDays);
+    map['reward_title'] = Variable<String>(rewardTitle);
+    if (!nullToAbsent || rewardDescription != null) {
+      map['reward_description'] = Variable<String>(rewardDescription);
+    }
+    if (!nullToAbsent || rewardImageUrl != null) {
+      map['reward_image_url'] = Variable<String>(rewardImageUrl);
+    }
+    map['is_archived'] = Variable<int>(isArchived);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  GoalsCompanion toCompanion(bool nullToAbsent) {
+    return GoalsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      title: Value(title),
+      habitId: Value(habitId),
+      targetDays: Value(targetDays),
+      rewardTitle: Value(rewardTitle),
+      rewardDescription: rewardDescription == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rewardDescription),
+      rewardImageUrl: rewardImageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rewardImageUrl),
+      isArchived: Value(isArchived),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Goal.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Goal(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      title: serializer.fromJson<String>(json['title']),
+      habitId: serializer.fromJson<String>(json['habitId']),
+      targetDays: serializer.fromJson<int>(json['targetDays']),
+      rewardTitle: serializer.fromJson<String>(json['rewardTitle']),
+      rewardDescription: serializer.fromJson<String?>(
+        json['rewardDescription'],
+      ),
+      rewardImageUrl: serializer.fromJson<String?>(json['rewardImageUrl']),
+      isArchived: serializer.fromJson<int>(json['isArchived']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'title': serializer.toJson<String>(title),
+      'habitId': serializer.toJson<String>(habitId),
+      'targetDays': serializer.toJson<int>(targetDays),
+      'rewardTitle': serializer.toJson<String>(rewardTitle),
+      'rewardDescription': serializer.toJson<String?>(rewardDescription),
+      'rewardImageUrl': serializer.toJson<String?>(rewardImageUrl),
+      'isArchived': serializer.toJson<int>(isArchived),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  Goal copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? habitId,
+    int? targetDays,
+    String? rewardTitle,
+    Value<String?> rewardDescription = const Value.absent(),
+    Value<String?> rewardImageUrl = const Value.absent(),
+    int? isArchived,
+    int? createdAt,
+    int? updatedAt,
+  }) => Goal(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    title: title ?? this.title,
+    habitId: habitId ?? this.habitId,
+    targetDays: targetDays ?? this.targetDays,
+    rewardTitle: rewardTitle ?? this.rewardTitle,
+    rewardDescription: rewardDescription.present
+        ? rewardDescription.value
+        : this.rewardDescription,
+    rewardImageUrl: rewardImageUrl.present
+        ? rewardImageUrl.value
+        : this.rewardImageUrl,
+    isArchived: isArchived ?? this.isArchived,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Goal copyWithCompanion(GoalsCompanion data) {
+    return Goal(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      title: data.title.present ? data.title.value : this.title,
+      habitId: data.habitId.present ? data.habitId.value : this.habitId,
+      targetDays: data.targetDays.present
+          ? data.targetDays.value
+          : this.targetDays,
+      rewardTitle: data.rewardTitle.present
+          ? data.rewardTitle.value
+          : this.rewardTitle,
+      rewardDescription: data.rewardDescription.present
+          ? data.rewardDescription.value
+          : this.rewardDescription,
+      rewardImageUrl: data.rewardImageUrl.present
+          ? data.rewardImageUrl.value
+          : this.rewardImageUrl,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Goal(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('title: $title, ')
+          ..write('habitId: $habitId, ')
+          ..write('targetDays: $targetDays, ')
+          ..write('rewardTitle: $rewardTitle, ')
+          ..write('rewardDescription: $rewardDescription, ')
+          ..write('rewardImageUrl: $rewardImageUrl, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    title,
+    habitId,
+    targetDays,
+    rewardTitle,
+    rewardDescription,
+    rewardImageUrl,
+    isArchived,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Goal &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.title == this.title &&
+          other.habitId == this.habitId &&
+          other.targetDays == this.targetDays &&
+          other.rewardTitle == this.rewardTitle &&
+          other.rewardDescription == this.rewardDescription &&
+          other.rewardImageUrl == this.rewardImageUrl &&
+          other.isArchived == this.isArchived &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class GoalsCompanion extends UpdateCompanion<Goal> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> title;
+  final Value<String> habitId;
+  final Value<int> targetDays;
+  final Value<String> rewardTitle;
+  final Value<String?> rewardDescription;
+  final Value<String?> rewardImageUrl;
+  final Value<int> isArchived;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const GoalsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.habitId = const Value.absent(),
+    this.targetDays = const Value.absent(),
+    this.rewardTitle = const Value.absent(),
+    this.rewardDescription = const Value.absent(),
+    this.rewardImageUrl = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GoalsCompanion.insert({
+    required String id,
+    required String userId,
+    required String title,
+    required String habitId,
+    required int targetDays,
+    required String rewardTitle,
+    this.rewardDescription = const Value.absent(),
+    this.rewardImageUrl = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       title = Value(title),
+       habitId = Value(habitId),
+       targetDays = Value(targetDays),
+       rewardTitle = Value(rewardTitle),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<Goal> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? title,
+    Expression<String>? habitId,
+    Expression<int>? targetDays,
+    Expression<String>? rewardTitle,
+    Expression<String>? rewardDescription,
+    Expression<String>? rewardImageUrl,
+    Expression<int>? isArchived,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (title != null) 'title': title,
+      if (habitId != null) 'habit_id': habitId,
+      if (targetDays != null) 'target_days': targetDays,
+      if (rewardTitle != null) 'reward_title': rewardTitle,
+      if (rewardDescription != null) 'reward_description': rewardDescription,
+      if (rewardImageUrl != null) 'reward_image_url': rewardImageUrl,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GoalsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? title,
+    Value<String>? habitId,
+    Value<int>? targetDays,
+    Value<String>? rewardTitle,
+    Value<String?>? rewardDescription,
+    Value<String?>? rewardImageUrl,
+    Value<int>? isArchived,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return GoalsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      habitId: habitId ?? this.habitId,
+      targetDays: targetDays ?? this.targetDays,
+      rewardTitle: rewardTitle ?? this.rewardTitle,
+      rewardDescription: rewardDescription ?? this.rewardDescription,
+      rewardImageUrl: rewardImageUrl ?? this.rewardImageUrl,
+      isArchived: isArchived ?? this.isArchived,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (habitId.present) {
+      map['habit_id'] = Variable<String>(habitId.value);
+    }
+    if (targetDays.present) {
+      map['target_days'] = Variable<int>(targetDays.value);
+    }
+    if (rewardTitle.present) {
+      map['reward_title'] = Variable<String>(rewardTitle.value);
+    }
+    if (rewardDescription.present) {
+      map['reward_description'] = Variable<String>(rewardDescription.value);
+    }
+    if (rewardImageUrl.present) {
+      map['reward_image_url'] = Variable<String>(rewardImageUrl.value);
+    }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<int>(isArchived.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('title: $title, ')
+          ..write('habitId: $habitId, ')
+          ..write('targetDays: $targetDays, ')
+          ..write('rewardTitle: $rewardTitle, ')
+          ..write('rewardDescription: $rewardDescription, ')
+          ..write('rewardImageUrl: $rewardImageUrl, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDb extends GeneratedDatabase {
   _$AppDb(QueryExecutor e) : super(e);
   $AppDbManager get managers => $AppDbManager(this);
@@ -2352,6 +3029,7 @@ abstract class _$AppDb extends GeneratedDatabase {
   late final $HabitInstancesTable habitInstances = $HabitInstancesTable(this);
   late final $MedicationsTable medications = $MedicationsTable(this);
   late final $MedicationLogsTable medicationLogs = $MedicationLogsTable(this);
+  late final $GoalsTable goals = $GoalsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2361,6 +3039,7 @@ abstract class _$AppDb extends GeneratedDatabase {
     habitInstances,
     medications,
     medicationLogs,
+    goals,
   ];
 }
 
@@ -3987,6 +4666,321 @@ typedef $$MedicationLogsTableProcessedTableManager =
       MedicationLog,
       PrefetchHooks Function({bool medicationId})
     >;
+typedef $$GoalsTableCreateCompanionBuilder =
+    GoalsCompanion Function({
+      required String id,
+      required String userId,
+      required String title,
+      required String habitId,
+      required int targetDays,
+      required String rewardTitle,
+      Value<String?> rewardDescription,
+      Value<String?> rewardImageUrl,
+      Value<int> isArchived,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$GoalsTableUpdateCompanionBuilder =
+    GoalsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> title,
+      Value<String> habitId,
+      Value<int> targetDays,
+      Value<String> rewardTitle,
+      Value<String?> rewardDescription,
+      Value<String?> rewardImageUrl,
+      Value<int> isArchived,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$GoalsTableFilterComposer extends Composer<_$AppDb, $GoalsTable> {
+  $$GoalsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get habitId => $composableBuilder(
+    column: $table.habitId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetDays => $composableBuilder(
+    column: $table.targetDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rewardTitle => $composableBuilder(
+    column: $table.rewardTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rewardDescription => $composableBuilder(
+    column: $table.rewardDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rewardImageUrl => $composableBuilder(
+    column: $table.rewardImageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GoalsTableOrderingComposer extends Composer<_$AppDb, $GoalsTable> {
+  $$GoalsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get habitId => $composableBuilder(
+    column: $table.habitId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetDays => $composableBuilder(
+    column: $table.targetDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rewardTitle => $composableBuilder(
+    column: $table.rewardTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rewardDescription => $composableBuilder(
+    column: $table.rewardDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rewardImageUrl => $composableBuilder(
+    column: $table.rewardImageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GoalsTableAnnotationComposer extends Composer<_$AppDb, $GoalsTable> {
+  $$GoalsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get habitId =>
+      $composableBuilder(column: $table.habitId, builder: (column) => column);
+
+  GeneratedColumn<int> get targetDays => $composableBuilder(
+    column: $table.targetDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get rewardTitle => $composableBuilder(
+    column: $table.rewardTitle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get rewardDescription => $composableBuilder(
+    column: $table.rewardDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get rewardImageUrl => $composableBuilder(
+    column: $table.rewardImageUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$GoalsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDb,
+          $GoalsTable,
+          Goal,
+          $$GoalsTableFilterComposer,
+          $$GoalsTableOrderingComposer,
+          $$GoalsTableAnnotationComposer,
+          $$GoalsTableCreateCompanionBuilder,
+          $$GoalsTableUpdateCompanionBuilder,
+          (Goal, BaseReferences<_$AppDb, $GoalsTable, Goal>),
+          Goal,
+          PrefetchHooks Function()
+        > {
+  $$GoalsTableTableManager(_$AppDb db, $GoalsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GoalsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> habitId = const Value.absent(),
+                Value<int> targetDays = const Value.absent(),
+                Value<String> rewardTitle = const Value.absent(),
+                Value<String?> rewardDescription = const Value.absent(),
+                Value<String?> rewardImageUrl = const Value.absent(),
+                Value<int> isArchived = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion(
+                id: id,
+                userId: userId,
+                title: title,
+                habitId: habitId,
+                targetDays: targetDays,
+                rewardTitle: rewardTitle,
+                rewardDescription: rewardDescription,
+                rewardImageUrl: rewardImageUrl,
+                isArchived: isArchived,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String title,
+                required String habitId,
+                required int targetDays,
+                required String rewardTitle,
+                Value<String?> rewardDescription = const Value.absent(),
+                Value<String?> rewardImageUrl = const Value.absent(),
+                Value<int> isArchived = const Value.absent(),
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion.insert(
+                id: id,
+                userId: userId,
+                title: title,
+                habitId: habitId,
+                targetDays: targetDays,
+                rewardTitle: rewardTitle,
+                rewardDescription: rewardDescription,
+                rewardImageUrl: rewardImageUrl,
+                isArchived: isArchived,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GoalsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDb,
+      $GoalsTable,
+      Goal,
+      $$GoalsTableFilterComposer,
+      $$GoalsTableOrderingComposer,
+      $$GoalsTableAnnotationComposer,
+      $$GoalsTableCreateCompanionBuilder,
+      $$GoalsTableUpdateCompanionBuilder,
+      (Goal, BaseReferences<_$AppDb, $GoalsTable, Goal>),
+      Goal,
+      PrefetchHooks Function()
+    >;
 
 class $AppDbManager {
   final _$AppDb _db;
@@ -3999,4 +4993,6 @@ class $AppDbManager {
       $$MedicationsTableTableManager(_db, _db.medications);
   $$MedicationLogsTableTableManager get medicationLogs =>
       $$MedicationLogsTableTableManager(_db, _db.medicationLogs);
+  $$GoalsTableTableManager get goals =>
+      $$GoalsTableTableManager(_db, _db.goals);
 }

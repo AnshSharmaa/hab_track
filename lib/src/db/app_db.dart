@@ -154,6 +154,25 @@ class AppDb extends _$AppDb {
   Future<bool> updateHabitEntry(Insertable<Habit> h) =>
       update(habits).replace(h);
 
+  // GOAL CRUD
+  Future<void> insertGoal(Insertable<Goal> goal) => into(goals).insert(goal);
+
+  Future<List<Goal>> getAllGoals(String userId) =>
+      (select(goals)
+            ..where((g) => g.userId.equals(userId) & g.isArchived.equals(0))
+            ..orderBy([
+              (g) => OrderingTerm(expression: g.createdAt),
+            ]))
+          .get();
+
+  Future<bool> updateGoalEntry(Insertable<Goal> goal) =>
+      update(goals).replace(goal);
+
+  Future<int> archiveGoal(String id) =>
+      (update(goals)..where((t) => t.id.equals(id))).write(
+        GoalsCompanion(isArchived: const Value(1)),
+      );
+
   Future<int> archiveHabit(String id) =>
       (update(habits)..where((t) => t.id.equals(id))).write(
         HabitsCompanion(isArchived: const Value(1)),

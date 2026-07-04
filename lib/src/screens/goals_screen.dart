@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../db/app_db.dart';
 import '../providers.dart';
 import '../repositories/goal_repository.dart';
-import '../repositories/habit_repository.dart';
 import '../theme/app_theme.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
@@ -18,16 +22,17 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   final _titleController = TextEditingController();
   final _rewardController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _imageUrlController = TextEditingController();
+  final _streakController = TextEditingController(text: '7');
   String? _selectedHabitId;
   int _targetDays = 7;
+  String? _selectedImagePath;
 
   @override
   void dispose() {
     _titleController.dispose();
     _rewardController.dispose();
     _descriptionController.dispose();
-    _imageUrlController.dispose();
+    _streakController.dispose();
     super.dispose();
   }
 
@@ -88,6 +93,62 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: AppDecorations.glassCard(elevated: true),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.emoji_events_rounded,
+                      color: AppColors.accentSoft,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          goalsAsync.when(
+                            data: (goals) => Text(
+                              '${goals.length} goal${goals.length == 1 ? '' : 's'}',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            loading: () => const Text(
+                              '0 goals',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            error: (_, __) => const Text(
+                              '0 goals',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Create streak rewards and keep the momentum going.',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
               Expanded(
                 child: goalsAsync.when(
                   data: (goals) => habitsAsync.when(
@@ -98,10 +159,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                             .map((goal) => GoalProgress(
                                   goal: goal,
                                   habit: habitsById[goal.habitId],
-                                  currentStreak: statsMap[goal.habitId]?.currentStreak ?? 0,
-                                  progress: (statsMap[goal.habitId]?.currentStreak ?? 0).clamp(0, goal.targetDays),
+                                  currentStreak:
+                                      statsMap[goal.habitId]?.currentStreak ?? 0,
+                                  progress: (statsMap[goal.habitId]?.currentStreak ?? 0)
+                                      .clamp(0, goal.targetDays)
+                                      .toInt(),
                                   targetDays: goal.targetDays,
-                                  unlocked: (statsMap[goal.habitId]?.currentStreak ?? 0) >= goal.targetDays,
+                                  unlocked: (statsMap[goal.habitId]?.currentStreak ?? 0) >=
+                                      goal.targetDays,
                                 ))
                             .toList();
                         if (goalProgress.isEmpty) {
@@ -113,7 +178,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                             final item = goalProgress[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _GoalCard(progress: item),
+                              child: _GoalCard(
+                                progress: item,
+                                onDelete: () => _deleteGoal(item.goal),
+                              ),
                             );
                           },
                         );
@@ -135,6 +203,60 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
+  Future<void> _pickRewardImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (pickedFile == null) return;
+
+    final docsDir = await getApplicationDocumentsDirectory();
+    final targetDir = Directory(p.join(docsDir.path, 'goal_images'));
+    await targetDir.create(recursive: true);
+
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${p.basename(pickedFile.path)}';
+    final targetPath = p.join(targetDir.path, fileName);
+    await File(pickedFile.path).copy(targetPath);
+
+    if (!mounted) return;
+    setState(() => _selectedImagePath = targetPath);
+  }
+
+  Future<void> _deleteGoal(Goal goal) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Delete goal?', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text(
+          'This will remove the goal from your list and archive it.',
+          style: TextStyle(color: AppColors.textMuted),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final repo = await ref.read(goalRepositoryProvider.future);
+    await repo.deleteGoal(goal.id);
+    if (!mounted) return;
+    ref.invalidate(goalsProvider);
+    ref.invalidate(habitStatsProvider);
+  }
+
   Future<void> _openCreateSheet() async {
     final habitsAsync = await ref.read(habitsListProvider.future);
     final habitOptions = habitsAsync.where((h) => h.isArchived == 0).toList();
@@ -148,59 +270,136 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       ),
       builder: (sheetContext) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (modalContext, setModalState) {
             return Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 20),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                MediaQuery.of(modalContext).viewInsets.bottom + 20,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Create a new goal', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                    const Text(
+                      'Create a new goal',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _titleController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(labelText: 'Goal name', labelStyle: TextStyle(color: AppColors.textMuted)),
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Goal name',
+                        labelStyle: TextStyle(color: AppColors.textMuted),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedHabitId,
-                      decoration: const InputDecoration(labelText: 'Linked habit', labelStyle: TextStyle(color: AppColors.textMuted)),
-                      items: habitOptions.map((habit) => DropdownMenuItem(value: habit.id, child: Text(habit.title, style: const TextStyle(color: Colors.white)))).toList(),
-                      onChanged: (value) => setState(() => _selectedHabitId = value),
+                      decoration: const InputDecoration(
+                        labelText: 'Linked habit',
+                        labelStyle: TextStyle(color: AppColors.textMuted),
+                      ),
+                      items: habitOptions
+                          .map(
+                            (habit) => DropdownMenuItem(
+                              value: habit.id,
+                              child: Text(
+                                habit.title,
+                                style: const TextStyle(color: AppColors.textPrimary),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) => setModalState(() => _selectedHabitId = value),
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<int>(
-                      value: _targetDays,
-                      decoration: const InputDecoration(labelText: 'Required streak', labelStyle: TextStyle(color: AppColors.textMuted)),
-                      items: const [3, 5, 7, 10, 14].map((days) => DropdownMenuItem(value: days, child: Text('$days days', style: const TextStyle(color: Colors.white)))).toList(),
-                      onChanged: (value) => setState(() => _targetDays = value ?? 7),
+                    TextField(
+                      controller: _streakController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Required streak (days)',
+                        labelStyle: TextStyle(color: AppColors.textMuted),
+                      ),
+                      onChanged: (value) {
+                        final parsed = int.tryParse(value);
+                        setModalState(() => _targetDays = parsed != null && parsed > 0 ? parsed : 7);
+                      },
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: _rewardController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(labelText: 'Reward title', labelStyle: TextStyle(color: AppColors.textMuted)),
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Reward title',
+                        labelStyle: TextStyle(color: AppColors.textMuted),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: _descriptionController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(labelText: 'Reward note', labelStyle: TextStyle(color: AppColors.textMuted)),
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Reward note',
+                        labelStyle: TextStyle(color: AppColors.textMuted),
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    TextField(
-                      controller: _imageUrlController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(labelText: 'Photo URL (optional)', labelStyle: TextStyle(color: AppColors.textMuted)),
+                    GestureDetector(
+                      onTap: _pickRewardImage,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.borderGlass),
+                          color: AppColors.surfaceGlassSoft,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.image_outlined, color: AppColors.accentSoft),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _selectedImagePath == null
+                                    ? 'Upload a reward image'
+                                    : 'Image selected ✓',
+                                style: const TextStyle(color: AppColors.textPrimary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                    if (_selectedImagePath != null) ...[
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.file(
+                          File(_selectedImagePath!),
+                          height: 110,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (_selectedHabitId == null || _titleController.text.trim().isEmpty || _rewardController.text.trim().isEmpty) {
+                          if (_selectedHabitId == null ||
+                              _titleController.text.trim().isEmpty ||
+                              _rewardController.text.trim().isEmpty) {
                             return;
                           }
                           final repo = await ref.read(goalRepositoryProvider.future);
@@ -210,21 +409,27 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                             habitId: _selectedHabitId!,
                             targetDays: _targetDays,
                             rewardTitle: _rewardController.text.trim(),
-                            rewardDescription: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-                            rewardImageUrl: _imageUrlController.text.trim().isEmpty ? null : _imageUrlController.text.trim(),
+                            rewardDescription: _descriptionController.text.trim().isEmpty
+                                ? null
+                                : _descriptionController.text.trim(),
+                            rewardImageUrl: _selectedImagePath,
                           );
                           if (!mounted) return;
                           Navigator.pop(sheetContext);
                           _titleController.clear();
                           _rewardController.clear();
                           _descriptionController.clear();
-                          _imageUrlController.clear();
+                          _streakController.text = '7';
                           _selectedHabitId = null;
+                          _selectedImagePath = null;
                           _targetDays = 7;
                           ref.invalidate(goalsProvider);
                           ref.invalidate(habitStatsProvider);
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: Colors.white,
+                        ),
                         child: const Text('Save goal'),
                       ),
                     ),
@@ -240,9 +445,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 }
 
 class _GoalCard extends StatelessWidget {
-  const _GoalCard({required this.progress});
+  const _GoalCard({required this.progress, required this.onDelete});
 
   final GoalProgress progress;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -273,16 +479,28 @@ class _GoalCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  progress.unlocked ? 'Unlocked' : '${progress.progress}/${progress.targetDays} days',
-                  style: TextStyle(color: accent, fontSize: 11.5, fontWeight: FontWeight.w700),
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      progress.unlocked ? 'Unlocked' : '${progress.progress}/${progress.targetDays} days',
+                      style: TextStyle(color: accent, fontSize: 11.5, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                    color: AppColors.textMuted,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -329,12 +547,10 @@ class _GoalCard extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        progress.goal.rewardImageUrl!,
+                      child: SizedBox(
                         width: 64,
                         height: 64,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        child: _buildRewardImage(progress.goal.rewardImageUrl!),
                       ),
                     ),
                   ),
@@ -350,6 +566,30 @@ class _GoalCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildRewardImage(String imagePath) {
+  final uri = Uri.tryParse(imagePath);
+  final isRemote = uri != null && uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
+
+  if (isRemote) {
+    return Image.network(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    );
+  }
+
+  final file = File(imagePath);
+  if (!file.existsSync()) {
+    return const SizedBox.shrink();
+  }
+
+  return Image.file(
+    file,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+  );
 }
 
 class _EmptyGoalState extends StatelessWidget {
