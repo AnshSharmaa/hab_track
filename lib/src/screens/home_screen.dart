@@ -41,16 +41,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       show: _showConfetti,
       child: Scaffold(
         backgroundColor: AppColors.bg,
-        body: Padding(
-          padding: EdgeInsets.fromLTRB(
-            isPhone ? 16 : 28,
-            isPhone ? 18 : 36,
-            isPhone ? 16 : 28,
-            24,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              isPhone ? 16 : 28,
+              isPhone ? 18 : 36,
+              isPhone ? 16 : 28,
+              24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Text(
                 today,
                 style: const TextStyle(
@@ -254,7 +255,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _dailyProgress(AsyncValue<HomeOverviewData> overviewAsync) {
