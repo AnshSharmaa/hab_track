@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
@@ -46,13 +47,19 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(isPhone ? 16 : 28, 18, isPhone ? 16 : 28, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                isPhone ? 16 : 28,
+                isPhone ? 18 : 36,
+                isPhone ? 16 : 28,
+                0,
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,22 +85,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       ),
                     ],
                   ),
-                  ElevatedButton.icon(
-                    onPressed: _openCreateSheet,
-                    icon: const Icon(Icons.emoji_events_rounded, size: 18),
-                    label: const Text('New goal'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent.withValues(alpha: 0.2),
-                      foregroundColor: AppColors.accentSoft,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
+                  _AddButton(onTap: _openCreateSheet),
                 ],
               ),
-              const SizedBox(height: 16),
-              Container(
+            ),
+            SizedBox(height: isPhone ? 14 : 20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: isPhone ? 16 : 28),
+              child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: AppDecorations.glassCard(elevated: true),
                 child: Row(
@@ -148,8 +147,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Expanded(
+            ),
+            SizedBox(height: isPhone ? 12 : 16),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isPhone ? 16 : 28,
+                  0,
+                  isPhone ? 16 : 28,
+                  24,
+                ),
                 child: goalsAsync.when(
                   data: (goals) => habitsAsync.when(
                     data: (habits) => statsAsync.when(
@@ -196,8 +203,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   error: (_, __) => const Center(child: Text('Could not load goals', style: TextStyle(color: AppColors.danger))),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -590,6 +597,42 @@ Widget _buildRewardImage(String imagePath) {
     fit: BoxFit.cover,
     errorBuilder: (_, __, ___) => const SizedBox.shrink(),
   );
+}
+
+class _AddButton extends StatelessWidget {
+  const _AddButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        width: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: AppDecorations.glassChip(selected: true),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 16, color: AppColors.accentSoft),
+            SizedBox(width: 4),
+            Text(
+              'New goal',
+              style: TextStyle(
+                color: AppColors.accentSoft,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _EmptyGoalState extends StatelessWidget {

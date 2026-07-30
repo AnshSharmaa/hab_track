@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/habit_colors.dart';
+import 'centered_emoji.dart';
 
 class AchievementBadge extends StatelessWidget {
   final int streak;
@@ -28,9 +29,8 @@ class AchievementBadge extends StatelessWidget {
             ),
           ],
         ),
-        child: Center(
-          child: Text(badge.emoji, style: TextStyle(fontSize: size * 0.5)),
-        ),
+        alignment: Alignment.center,
+        child: CenteredEmoji(badge.emoji, size: size * 0.5),
       ),
     );
   }

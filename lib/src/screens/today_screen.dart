@@ -13,6 +13,7 @@ import '../utils/date_utils.dart';
 import '../widgets/ring_progress.dart';
 import '../widgets/confetti_overlay.dart';
 import '../widgets/achievement_badge.dart';
+import '../widgets/centered_emoji.dart';
 import 'add_habit_screen.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
@@ -316,6 +317,7 @@ class _HabitCard extends ConsumerWidget {
                 ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Ring progress
             RingProgress(
@@ -323,10 +325,7 @@ class _HabitCard extends ConsumerWidget {
               size: 36,
               strokeWidth: 3,
               colorIndex: colorIndex,
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: justCompleted ? 18 : 14),
-              ),
+              child: CenteredEmoji(emoji, size: justCompleted ? 18 : 14),
             ),
             const SizedBox(width: 12),
             Expanded(

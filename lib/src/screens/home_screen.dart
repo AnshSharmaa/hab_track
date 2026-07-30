@@ -9,6 +9,7 @@ import '../utils/date_utils.dart';
 import '../theme/app_theme.dart';
 import '../theme/habit_colors.dart';
 import '../widgets/achievement_badge.dart';
+import '../widgets/centered_emoji.dart';
 import '../widgets/confetti_overlay.dart';
 import 'add_habit_screen.dart';
 import 'add_medication_screen.dart';
@@ -395,12 +396,14 @@ class _HomeItemCard extends StatelessWidget {
             : null,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: onToggle,
             child: Container(
               width: 34,
               height: 34,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: entry.done
                     ? accentColor.withValues(alpha: 0.15)
@@ -412,18 +415,14 @@ class _HomeItemCard extends StatelessWidget {
                       : AppColors.borderGlass,
                 ),
               ),
-              child: Center(
-                child: Text(
-                  entry.emoji,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
+              child: CenteredEmoji(entry.emoji, size: 16),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   entry.title,
@@ -433,6 +432,7 @@ class _HomeItemCard extends StatelessWidget {
                         : AppColors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
+                    height: 1.2,
                     decoration: entry.done ? TextDecoration.lineThrough : null,
                     decorationColor: accentColor.withValues(alpha: 0.5),
                   ),
@@ -445,6 +445,7 @@ class _HomeItemCard extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 12,
+                      height: 1.25,
                     ),
                   ),
               ],
@@ -456,6 +457,7 @@ class _HomeItemCard extends StatelessWidget {
               color: statusColor,
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
+              height: 1.2,
             ),
           ),
         ],

@@ -44,12 +44,7 @@ class RingProgress extends StatelessWidget {
                 strokeCap: StrokeCap.round,
               ),
             ),
-            if (this.child != null)
-              SizedBox(
-                width: size * 0.6,
-                height: size * 0.6,
-                child: FittedBox(child: this.child),
-              ),
+            if (this.child != null) Center(child: this.child),
           ],
         ),
       ),

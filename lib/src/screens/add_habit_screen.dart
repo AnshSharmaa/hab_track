@@ -7,6 +7,7 @@ import '../repositories/habit_repository.dart';
 import '../services/habit_notification_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/habit_colors.dart';
+import '../widgets/centered_emoji.dart';
 
 class AddHabitScreen extends ConsumerStatefulWidget {
   const AddHabitScreen({super.key, this.existingHabit});
@@ -380,7 +381,7 @@ class _EmojiColorPicker extends StatelessWidget {
                       ),
                     ),
                     child: Center(
-                      child: Text(selectedEmoji, style: const TextStyle(fontSize: 20)),
+                      child: CenteredEmoji(selectedEmoji, size: 20),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -444,7 +445,7 @@ class _EmojiColorPicker extends StatelessWidget {
                           ),
                         ),
                         child: Center(
-                          child: Text(e, style: const TextStyle(fontSize: 16)),
+                          child: CenteredEmoji(e, size: 16),
                         ),
                       ),
                     )).toList(),

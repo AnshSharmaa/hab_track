@@ -180,11 +180,12 @@ class _MedCard extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 34,
                 height: 34,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: AppColors.accent.withValues(alpha: 0.14),
@@ -450,6 +451,7 @@ class _EmptyState extends StatelessWidget {
           Container(
             width: 72,
             height: 72,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.surfaceGlass,
