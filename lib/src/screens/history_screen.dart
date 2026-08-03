@@ -34,6 +34,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final doseHistoryAsync = ref.watch(medicationDoseHistoryProvider);
     final adherenceAsync = ref.watch(medicationAdherenceProvider(_rangeDays));
     final medLogsAsync = ref.watch(medicationLogsHistoryProvider(_rangeDays));
+    final todoHistoryAsync = ref.watch(todoHistoryProvider(_rangeDays));
     final hasActiveFilters =
         _chartMode != _HistoryChartMode.summary ||
         _scope != _HistoryScope.all ||
@@ -235,6 +236,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                     child: Text('Habits'),
                                   ),
                                   DropdownMenuItem(
+                                    value: _HistoryScope.todos,
+                                    child: Text('Todos'),
+                                  ),
+                                  DropdownMenuItem(
                                     value: _HistoryScope.medications,
                                     child: Text('Medications'),
                                   ),
@@ -331,11 +336,23 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const SizedBox(height: 10),
                         historyAsync.when(
                           data: (historyMap) => medLogsAsync.when(
-                            data: (logs) => _TrendChartCard(
-                              dates: _datesForRange(_rangeDays),
-                              scores: _buildHeatmapScores(
-                                historyMap: historyMap,
-                                medLogs: logs,
+                            data: (logs) => todoHistoryAsync.when(
+                              data: (todoCounts) => _TrendChartCard(
+                                dates: _datesForRange(_rangeDays),
+                                scores: _buildHeatmapScores(
+                                  historyMap: historyMap,
+                                  medLogs: logs,
+                                  todoCounts: todoCounts,
+                                ),
+                              ),
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              error: (_, _) => const Text(
+                                'Could not load trend data.',
+                                style: TextStyle(color: AppColors.danger),
                               ),
                             ),
                             loading: () => const Center(
@@ -368,20 +385,33 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const SizedBox(height: 10),
                         historyAsync.when(
                           data: (historyMap) => medLogsAsync.when(
-                            data: (logs) => habitsAsync.when(
-                              data: (habits) => medsAsync.when(
-                                data: (meds) => _ContributionHeatmapCard(
-                                  dates: _datesForRange(_rangeDays),
-                                  scores: _buildHeatmapScores(
-                                    historyMap: historyMap,
-                                    medLogs: logs,
+                            data: (logs) => todoHistoryAsync.when(
+                              data: (todoCounts) => habitsAsync.when(
+                                data: (habits) => medsAsync.when(
+                                  data: (meds) => _ContributionHeatmapCard(
+                                    dates: _datesForRange(_rangeDays),
+                                    scores: _buildHeatmapScores(
+                                      historyMap: historyMap,
+                                      medLogs: logs,
+                                      todoCounts: todoCounts,
+                                    ),
+                                    onDayTap: (date) => _showDayActivityModal(
+                                      date: date,
+                                      historyMap: historyMap,
+                                      medLogs: logs,
+                                      habits: habits,
+                                      meds: meds,
+                                      todoCount: todoCounts[toIsoDate(date)] ?? 0,
+                                    ),
                                   ),
-                                  onDayTap: (date) => _showDayActivityModal(
-                                    date: date,
-                                    historyMap: historyMap,
-                                    medLogs: logs,
-                                    habits: habits,
-                                    meds: meds,
+                                  loading: () => const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  error: (_, _) => const Text(
+                                    'Could not load heatmap data.',
+                                    style: TextStyle(color: AppColors.danger),
                                   ),
                                 ),
                                 loading: () => const Center(
@@ -422,7 +452,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ),
                         const SizedBox(height: 14),
                       ],
-                      if (_scope != _HistoryScope.medications)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.habits)
                         const Text(
                           'Habits',
                           style: TextStyle(
@@ -431,9 +462,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      if (_scope != _HistoryScope.medications)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.habits)
                         const SizedBox(height: 10),
-                      if (_scope != _HistoryScope.medications)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.habits)
                         habitsAsync.when(
                           data: (habits) => historyAsync.when(
                             data: (historyMap) => statsAsync.when(
@@ -507,9 +540,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             style: TextStyle(color: AppColors.danger),
                           ),
                         ),
-                      if (_scope != _HistoryScope.habits)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.medications)
                         const SizedBox(height: 14),
-                      if (_scope != _HistoryScope.habits)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.medications)
                         const Text(
                           'Medications',
                           style: TextStyle(
@@ -518,9 +553,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      if (_scope != _HistoryScope.habits)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.medications)
                         const SizedBox(height: 10),
-                      if (_scope != _HistoryScope.habits)
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.medications)
                         medsAsync.when(
                           data: (meds) => doseHistoryAsync.when(
                             data: (doseHistory) => adherenceAsync.when(
@@ -594,6 +631,48 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             style: TextStyle(color: AppColors.danger),
                           ),
                         ),
+                      if (_scope == _HistoryScope.all ||
+                          _scope == _HistoryScope.todos) ...[
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Todos',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        todoHistoryAsync.when(
+                          data: (counts) {
+                            final total = counts.values.fold<int>(
+                              0,
+                              (a, b) => a + b,
+                            );
+                            final activeDays = counts.values
+                                .where((c) => c > 0)
+                                .length;
+                            return _HistoryCard(
+                              title: 'Completions',
+                              completed: total,
+                              total: _rangeDays,
+                              streak: activeDays,
+                              best: counts.values.isEmpty
+                                  ? 0
+                                  : counts.values.reduce(
+                                      (a, b) => a > b ? a : b,
+                                    ),
+                            );
+                          },
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          error: (_, _) => const Text(
+                            'Could not load todo history.',
+                            style: TextStyle(color: AppColors.danger),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -618,10 +697,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Map<String, int> _buildHeatmapScores({
     required Map<String, List<HabitInstance>> historyMap,
     required List<MedicationLog> medLogs,
+    required Map<String, int> todoCounts,
   }) {
     final scores = <String, int>{};
 
-    if (_scope != _HistoryScope.medications) {
+    if (_scope == _HistoryScope.all || _scope == _HistoryScope.habits) {
       for (final entry in historyMap.entries) {
         if (_selectedHabitId != 'all' && entry.key != _selectedHabitId) {
           continue;
@@ -634,7 +714,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       }
     }
 
-    if (_scope != _HistoryScope.habits) {
+    if (_scope == _HistoryScope.all || _scope == _HistoryScope.medications) {
       for (final log in medLogs) {
         if (_selectedMedicationId != 'all' &&
             log.medicationId != _selectedMedicationId) {
@@ -643,6 +723,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         if (log.status == 'taken') {
           scores[log.date] = (scores[log.date] ?? 0) + 1;
         }
+      }
+    }
+
+    if (_scope == _HistoryScope.all || _scope == _HistoryScope.todos) {
+      for (final entry in todoCounts.entries) {
+        scores[entry.key] = (scores[entry.key] ?? 0) + entry.value;
       }
     }
     return scores;
@@ -654,9 +740,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       labels.add('Chart: Heatmap');
     }
     if (_scope != _HistoryScope.all) {
-      labels.add(
-        'Scope: ${_scope == _HistoryScope.habits ? 'Habits' : 'Medications'}',
-      );
+      final name = switch (_scope) {
+        _HistoryScope.habits => 'Habits',
+        _HistoryScope.medications => 'Medications',
+        _HistoryScope.todos => 'Todos',
+        _HistoryScope.all => 'All',
+      };
+      labels.add('Scope: $name');
     }
     if (_selectedHabitId != 'all') {
       labels.add('Habit selected');
@@ -676,6 +766,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     required List<MedicationLog> medLogs,
     required List<Habit> habits,
     required List<MedicationWithTimes> meds,
+    int todoCount = 0,
   }) async {
     final iso = toIsoDate(date);
     final habitNameById = {for (final h in habits) h.id: h.title};
@@ -765,6 +856,25 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       ),
                     ),
                   ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Todos',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  todoCount == 0
+                      ? 'No todo completions'
+                      : '$todoCount todo${todoCount == 1 ? '' : 's'} completed',
+                  style: TextStyle(
+                    color: todoCount == 0
+                        ? const Color(0xFF64748B)
+                        : Colors.white,
+                  ),
+                ),
               ],
             ),
           ),
@@ -782,7 +892,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
 enum _HistoryChartMode { summary, heatmap }
 
-enum _HistoryScope { all, habits, medications }
+enum _HistoryScope { all, habits, medications, todos }
 
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard({
