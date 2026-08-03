@@ -3,6 +3,7 @@ import 'db/app_db.dart';
 import 'repositories/goal_repository.dart';
 import 'repositories/habit_repository.dart';
 import 'repositories/medication_repository.dart';
+import 'repositories/todo_repository.dart';
 import 'utils/date_utils.dart';
 
 const deviceOwnerUserId = 'device_owner';
@@ -15,12 +16,16 @@ class HomeOverviewData {
     required this.doneHabits,
     required this.medications,
     required this.doseStatusMap,
+    required this.homeTodos,
+    required this.todoIdsCompletedToday,
   });
 
   final List<Habit> habits;
   final List<Habit> doneHabits;
   final List<MedicationWithTimes> medications;
   final Map<String, Map<String, String>> doseStatusMap;
+  final List<TodoWithDetails> homeTodos;
+  final Set<String> todoIdsCompletedToday;
 }
 
 // DB provider
@@ -120,15 +125,67 @@ final goalsProvider = FutureProvider<List<Goal>>((ref) async {
   return repo.getAllGoals(userId);
 });
 
+final todoRepositoryProvider = FutureProvider<TodoRepository>((ref) async {
+  final db = await ref.watch(appDbProvider.future);
+  return TodoRepository(db);
+});
+
+final todosProvider = FutureProvider<List<TodoWithDetails>>((ref) async {
+  final repo = await ref.watch(todoRepositoryProvider.future);
+  final userId = ref.watch(userIdProvider);
+  return repo.getAllTodosWithDetails(userId);
+});
+
+final todoTagsProvider = FutureProvider<List<TodoTag>>((ref) async {
+  final repo = await ref.watch(todoRepositoryProvider.future);
+  final userId = ref.watch(userIdProvider);
+  return repo.getAllTags(userId);
+});
+
+final todosForDateProvider =
+    FutureProvider.family<List<TodoWithDetails>, DateTime>((ref, date) async {
+      final repo = await ref.watch(todoRepositoryProvider.future);
+      final userId = ref.watch(userIdProvider);
+      return repo.getTodosForDate(userId, date);
+    });
+
+final homeTodosProvider = FutureProvider<List<TodoWithDetails>>((ref) async {
+  final repo = await ref.watch(todoRepositoryProvider.future);
+  final userId = ref.watch(userIdProvider);
+  return repo.getHomeTodos(userId);
+});
+
+final todoIdsCompletedTodayProvider = FutureProvider<Set<String>>((ref) async {
+  final repo = await ref.watch(todoRepositoryProvider.future);
+  return repo.getTodoIdsCompletedOn(todayIso());
+});
+
+final todoHistoryProvider =
+    FutureProvider.family<Map<String, int>, int>((ref, days) async {
+      final repo = await ref.watch(todoRepositoryProvider.future);
+      return repo.getDailyCompletionCounts(days);
+    });
+
+final todoCompletionsProvider =
+    FutureProvider.family<List<TodoCompletion>, int>((ref, days) async {
+      final repo = await ref.watch(todoRepositoryProvider.future);
+      return repo.getCompletionsForRange(days);
+    });
+
 final homeOverviewProvider = FutureProvider<HomeOverviewData>((ref) async {
   final habits = await ref.watch(habitsListProvider.future);
   final doneHabits = await ref.watch(todayHabitsProvider.future);
   final medications = await ref.watch(medicationsProvider.future);
   final doseStatusMap = await ref.watch(medicationDoseHistoryProvider.future);
+  final homeTodos = await ref.watch(homeTodosProvider.future);
+  final todoIdsCompletedToday =
+      await ref.watch(todoIdsCompletedTodayProvider.future);
   return HomeOverviewData(
     habits: habits,
     doneHabits: doneHabits,
     medications: medications,
     doseStatusMap: doseStatusMap,
+    homeTodos: homeTodos,
+    todoIdsCompletedToday: todoIdsCompletedToday,
   );
 });

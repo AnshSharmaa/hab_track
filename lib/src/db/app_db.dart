@@ -91,7 +91,92 @@ class Goals extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Habits, HabitInstances, Medications, MedicationLogs, Goals])
+class Todos extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get title => text()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get priority =>
+      text().withDefault(const Constant('medium'))(); // low | medium | high
+  IntColumn get dueAt => integer()(); // epoch ms
+  IntColumn get allDay => integer().withDefault(const Constant(0))();
+  TextColumn get recurrenceJson => text().nullable()();
+  TextColumn get recurrenceParentId => text().nullable()();
+  IntColumn get nagEnabled => integer().withDefault(const Constant(1))();
+  IntColumn get nagIntervalMinutes =>
+      integer().withDefault(const Constant(15))();
+  TextColumn get status =>
+      text().withDefault(const Constant('open'))(); // open | done | dismissed
+  IntColumn get completedAt => integer().nullable()();
+  IntColumn get isPinned => integer().withDefault(const Constant(0))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  IntColumn get isArchived => integer().withDefault(const Constant(0))();
+  TextColumn get emoji => text().withDefault(const Constant('☑️'))();
+  IntColumn get colorIndex => integer().withDefault(const Constant(0))();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class TodoSubtasks extends Table {
+  TextColumn get id => text()();
+  TextColumn get todoId =>
+      text().customConstraint('NOT NULL REFERENCES todos(id)')();
+  TextColumn get title => text()();
+  IntColumn get completed => integer().withDefault(const Constant(0))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class TodoTags extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get name => text()();
+  IntColumn get colorIndex => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class TodoTagMap extends Table {
+  TextColumn get todoId =>
+      text().customConstraint('NOT NULL REFERENCES todos(id)')();
+  TextColumn get tagId =>
+      text().customConstraint('NOT NULL REFERENCES todo_tags(id)')();
+
+  @override
+  Set<Column> get primaryKey => {todoId, tagId};
+}
+
+class TodoCompletions extends Table {
+  TextColumn get id => text()();
+  TextColumn get todoId =>
+      text().customConstraint('NOT NULL REFERENCES todos(id)')();
+  TextColumn get date => text()(); // YYYY-MM-DD
+  IntColumn get completedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(
+  tables: [
+    Habits,
+    HabitInstances,
+    Medications,
+    MedicationLogs,
+    Goals,
+    Todos,
+    TodoSubtasks,
+    TodoTags,
+    TodoTagMap,
+    TodoCompletions,
+  ],
+)
 class AppDb extends _$AppDb {
   AppDb._(super.e);
 
@@ -102,7 +187,7 @@ class AppDb extends _$AppDb {
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -135,6 +220,21 @@ class AppDb extends _$AppDb {
       }
       if (from < 6) {
         await m.createTable(goals);
+      }
+      if (from < 7) {
+        await m.createTable(todos);
+        await m.createTable(todoSubtasks);
+        await m.createTable(todoTags);
+        await m.createTable(todoTagMap);
+        await m.createTable(todoCompletions);
+      }
+      if (from < 8) {
+        await customStatement(
+          "ALTER TABLE todos ADD COLUMN emoji TEXT NOT NULL DEFAULT '☑️'",
+        );
+        await customStatement(
+          'ALTER TABLE todos ADD COLUMN color_index INTEGER NOT NULL DEFAULT 0',
+        );
       }
     },
   );
@@ -307,5 +407,177 @@ class AppDb extends _$AppDb {
             (l) => OrderingTerm(expression: l.time),
           ]))
         .get();
+  }
+
+  // TODOS
+  Future<void> insertTodo(Insertable<Todo> todo) => into(todos).insert(todo);
+
+  Future<List<Todo>> getAllTodos(String userId) =>
+      (select(todos)
+            ..where((t) => t.userId.equals(userId) & t.isArchived.equals(0))
+            ..orderBy([
+              (t) => OrderingTerm(
+                expression: t.isPinned,
+                mode: OrderingMode.desc,
+              ),
+              (t) => OrderingTerm(expression: t.sortOrder),
+              (t) => OrderingTerm(expression: t.dueAt),
+            ]))
+          .get();
+
+  Future<Todo?> getTodoById(String id) =>
+      (select(todos)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Future<bool> updateTodoEntry(Insertable<Todo> todo) =>
+      update(todos).replace(todo);
+
+  Future<int> archiveTodo(String id) =>
+      (update(todos)..where((t) => t.id.equals(id))).write(
+        const TodosCompanion(isArchived: Value(1)),
+      );
+
+  Future<int> getNextTodoSortOrder() async {
+    final expr = todos.sortOrder.max();
+    final query = selectOnly(todos)..addColumns([expr]);
+    final row = await query.getSingleOrNull();
+    final maxOrder = row?.read(expr) ?? 0;
+    return maxOrder + 1;
+  }
+
+  Future<void> reorderTodos(List<String> orderedIds) async {
+    await transaction(() async {
+      for (var i = 0; i < orderedIds.length; i++) {
+        await (update(todos)..where((t) => t.id.equals(orderedIds[i]))).write(
+          TodosCompanion(sortOrder: Value(i + 1)),
+        );
+      }
+    });
+  }
+
+  Future<List<Todo>> getOpenTodos(String userId) =>
+      (select(todos)
+            ..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.isArchived.equals(0) &
+                  t.status.equals('open'),
+            )
+            ..orderBy([
+              (t) => OrderingTerm(
+                expression: t.isPinned,
+                mode: OrderingMode.desc,
+              ),
+              (t) => OrderingTerm(expression: t.sortOrder),
+              (t) => OrderingTerm(expression: t.dueAt),
+            ]))
+          .get();
+
+  // TODO SUBTASKS
+  Future<void> insertTodoSubtask(Insertable<TodoSubtask> subtask) =>
+      into(todoSubtasks).insert(subtask);
+
+  Future<List<TodoSubtask>> getSubtasksForTodo(String todoId) =>
+      (select(todoSubtasks)
+            ..where((s) => s.todoId.equals(todoId))
+            ..orderBy([(s) => OrderingTerm(expression: s.sortOrder)]))
+          .get();
+
+  Future<bool> updateTodoSubtaskEntry(Insertable<TodoSubtask> subtask) =>
+      update(todoSubtasks).replace(subtask);
+
+  Future<int> deleteSubtasksForTodo(String todoId) =>
+      (delete(todoSubtasks)..where((s) => s.todoId.equals(todoId))).go();
+
+  Future<int> deleteTodoSubtask(String id) =>
+      (delete(todoSubtasks)..where((s) => s.id.equals(id))).go();
+
+  // TODO TAGS
+  Future<void> insertTodoTag(Insertable<TodoTag> tag) =>
+      into(todoTags).insert(tag);
+
+  Future<List<TodoTag>> getAllTodoTags(String userId) =>
+      (select(todoTags)
+            ..where((t) => t.userId.equals(userId))
+            ..orderBy([(t) => OrderingTerm(expression: t.name)]))
+          .get();
+
+  Future<TodoTag?> getTodoTagById(String id) =>
+      (select(todoTags)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Future<int> deleteTodoTag(String id) async {
+    await (delete(todoTagMap)..where((m) => m.tagId.equals(id))).go();
+    return (delete(todoTags)..where((t) => t.id.equals(id))).go();
+  }
+
+  Future<void> setTodoTags(String todoId, List<String> tagIds) async {
+    await transaction(() async {
+      await (delete(todoTagMap)..where((m) => m.todoId.equals(todoId))).go();
+      for (final tagId in tagIds) {
+        await into(todoTagMap).insert(
+          TodoTagMapCompanion.insert(todoId: todoId, tagId: tagId),
+        );
+      }
+    });
+  }
+
+  Future<List<TodoTag>> getTagsForTodo(String todoId) {
+    final query = select(todoTags).join([
+      innerJoin(
+        todoTagMap,
+        todoTagMap.tagId.equalsExp(todoTags.id),
+      ),
+    ])..where(todoTagMap.todoId.equals(todoId));
+    return query.map((row) => row.readTable(todoTags)).get();
+  }
+
+  Future<List<String>> getTodoIdsForTag(String tagId) async {
+    final rows = await (select(
+      todoTagMap,
+    )..where((m) => m.tagId.equals(tagId))).get();
+    return rows.map((r) => r.todoId).toList();
+  }
+
+  Future<Set<String>> getTodoIdsWithAnyTag(String userId) async {
+    final rows = await select(todoTagMap).get();
+    return rows.map((r) => r.todoId).toSet();
+  }
+
+  // TODO COMPLETIONS
+  Future<void> insertTodoCompletion(Insertable<TodoCompletion> completion) =>
+      into(todoCompletions).insert(completion);
+
+  Future<List<TodoCompletion>> getTodoCompletionsForRange(
+    String startDate,
+    String endDate,
+  ) {
+    return (select(todoCompletions)
+          ..where((c) => c.date.isBetweenValues(startDate, endDate))
+          ..orderBy([(c) => OrderingTerm(expression: c.date)]))
+        .get();
+  }
+
+  Future<List<TodoCompletion>> getTodoCompletionsForTodo(
+    String todoId,
+    String startDate,
+    String endDate,
+  ) {
+    return (select(todoCompletions)
+          ..where(
+            (c) =>
+                c.todoId.equals(todoId) &
+                c.date.isBetweenValues(startDate, endDate),
+          )
+          ..orderBy([(c) => OrderingTerm(expression: c.date)]))
+        .get();
+  }
+
+  Future<int> deleteTodoCompletionsForTodoOnDate(
+    String todoId,
+    String date,
+  ) {
+    return (delete(todoCompletions)..where(
+          (c) => c.todoId.equals(todoId) & c.date.equals(date),
+        ))
+        .go();
   }
 }

@@ -19,6 +19,11 @@ class HabitColors {
     '✍️', '🎨', '🎵', '🌱', '🧠', '💤', '☀️', '🏋️',
   ];
 
+  static List<String> todoEmojis = [
+    '☑️', '📌', '📞', '🛒', '✉️', '💼', '🏠', '💡',
+    '🧾', '🗓️', '🛠️', '🎁', '🧹', '📦', '✈️', '💰',
+  ];
+
   static Color getColor(int index) => accentColors[index % accentColors.length];
 
   static Color getColorWithAlpha(int index, double alpha) =>

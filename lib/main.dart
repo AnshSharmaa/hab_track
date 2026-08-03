@@ -6,6 +6,7 @@ import 'src/dev/mock_seed.dart';
 import 'src/providers.dart';
 import 'src/screens/app_shell.dart';
 import 'src/services/medication_notification_service.dart';
+import 'src/services/todo_notification_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,12 +34,16 @@ class _MainAppState extends ConsumerState<MainApp> {
   Future<void> _bootstrap() async {
     try {
       await MedicationNotificationService.instance.initialize();
+      await TodoNotificationService.instance.initialize();
       if (kDebugMode) {
+        // Drop orphaned todo schedules before reseed (new UUIDs each run).
+        await TodoNotificationService.instance.cancelAllPendingTodos();
         final db = await ref.read(appDbProvider.future);
         final userId = ref.read(userIdProvider);
         await MockSeed(db).insertMockData(
           userId,
-          anchorDate: DateTime(2026, 4, 24),
+          // Use "today" so Home / Todos / History all look current.
+          anchorDate: DateTime.now(),
           clearExisting: true,
         );
       }
@@ -49,6 +54,17 @@ class _MainAppState extends ConsumerState<MainApp> {
       ref.invalidate(medicationsProvider);
       ref.invalidate(medicationDoseHistoryProvider);
       ref.invalidate(medicationAdherenceProvider(7));
+      ref.invalidate(todosProvider);
+      ref.invalidate(homeTodosProvider);
+      ref.invalidate(todoTagsProvider);
+      ref.invalidate(goalsProvider);
+
+      final todoRepo = await ref.read(todoRepositoryProvider.future);
+      final userId = ref.read(userIdProvider);
+      final openTodos = await todoRepo.getOpenTodosWithDetails(userId);
+      await TodoNotificationService.instance.resyncOpenTodos(
+        openTodos.map((t) => t.todo).toList(),
+      );
     } catch (error, _) {
       if (!mounted) return;
       ScaffoldMessenger.of(

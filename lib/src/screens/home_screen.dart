@@ -13,6 +13,8 @@ import '../widgets/centered_emoji.dart';
 import '../widgets/confetti_overlay.dart';
 import 'add_habit_screen.dart';
 import 'add_medication_screen.dart';
+import 'add_todo_screen.dart';
+import '../services/todo_notification_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -143,6 +145,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _QuickAction(
+                        label: 'Add todo',
+                        icon: Icons.checklist_rounded,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const AddTodoScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickAction(
                         label: 'Add med',
                         icon: Icons.medication_rounded,
                         onTap: () {
@@ -170,6 +187,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 10),
               Expanded(
                 child: overviewAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   data: (overview) {
                     final doneIds =
                         overview.doneHabits.map((h) => h.id).toSet();
@@ -182,6 +201,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         )
                         .toList();
                     final items = <_HomeEntry>[
+                      ...overview.homeTodos.map((todo) {
+                        final due = DateTime.fromMillisecondsSinceEpoch(
+                          todo.todo.dueAt,
+                        );
+                        final dueLabel = todo.todo.allDay == 1
+                            ? DateFormat('MMM d').format(due)
+                            : DateFormat('h:mm a').format(due);
+                        final done =
+                            todo.todo.status != 'open' ||
+                            overview.todoIdsCompletedToday.contains(
+                              todo.todo.id,
+                            );
+                        final overdueLabel =
+                            !done && todo.isOverdue ? 'Overdue · ' : '';
+                        return _HomeEntry.todo(
+                          id: todo.todo.id,
+                          title: todo.todo.title,
+                          subtitle: '$overdueLabel$dueLabel',
+                          done: done,
+                          emoji: todo.todo.emoji.isNotEmpty
+                              ? todo.todo.emoji
+                              : '☑️',
+                          colorIndex: todo.todo.colorIndex,
+                        );
+                      }),
                       ...todaysHabits.map(
                         (habit) => _HomeEntry.habit(
                           id: habit.id,
@@ -214,20 +258,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     if (items.isEmpty) {
                       return const Center(
                         child: Text(
-                          'No habits or meds for today.',
+                          'No habits, todos, or meds for today.',
                           style: TextStyle(color: AppColors.textMuted),
                         ),
                       );
                     }
                     return ListView.builder(
-                      itemCount: items.length + 1,
+                      itemCount: items.length,
                       itemBuilder: (context, index) {
-                        if (index == items.length) {
-                          return const Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: _ComingSoonCard(),
-                          );
-                        }
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: _HomeItemCard(
@@ -299,6 +337,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       ref.invalidate(todayHabitsProvider);
       ref.invalidate(todayHabitInstancesProvider);
+      ref.invalidate(homeOverviewProvider);
+      return;
+    }
+
+    if (entry.type == _HomeEntryType.todo) {
+      final repo = await ref.read(todoRepositoryProvider.future);
+      if (entry.done) {
+        await repo.reopenTodo(entry.id);
+        final details = await repo.getTodoDetails(entry.id);
+        if (details != null) {
+          await TodoNotificationService.instance.scheduleTodo(details.todo);
+        }
+      } else {
+        final updated = await repo.completeTodo(entry.id);
+        await TodoNotificationService.instance.cancelTodo(updated);
+        if (updated.status == 'open') {
+          await TodoNotificationService.instance.scheduleTodo(updated);
+        }
+        setState(() => _showConfetti = true);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() => _showConfetti = false);
+          }
+        });
+      }
+      ref.invalidate(todosProvider);
+      ref.invalidate(homeTodosProvider);
+      ref.invalidate(todoIdsCompletedTodayProvider);
+      ref.invalidate(homeOverviewProvider);
       return;
     }
 
@@ -323,6 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     ref.invalidate(medicationDoseHistoryProvider);
     ref.invalidate(medicationLogsHistoryProvider(30));
+    ref.invalidate(homeOverviewProvider);
   }
 }
 
@@ -373,13 +441,25 @@ class _HomeItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHabit = entry.type == _HomeEntryType.habit;
-    final statusText = isHabit
+    final isTodo = entry.type == _HomeEntryType.todo;
+    final statusText = isTodo
+        ? (entry.done
+              ? 'Done'
+              : (entry.subtitle.startsWith('Overdue') ? 'Overdue' : 'Due'))
+        : isHabit
         ? (entry.done ? 'Completed' : 'Pending')
-        : '${entry.times} reminder${entry.times == 1 ? '' : 's'}';
-    final statusColor = isHabit && entry.done
-        ? HabitColors.getColor(entry.colorIndex)
-        : AppColors.textMuted;
+        : (entry.done
+              ? 'Taken'
+              : '${entry.times} reminder${entry.times == 1 ? '' : 's'}');
+
     final accentColor = HabitColors.getColor(entry.colorIndex);
+    final statusColor = entry.done
+        ? accentColor
+        : (!entry.done &&
+              isTodo &&
+              entry.subtitle.startsWith('Overdue'))
+        ? AppColors.danger
+        : AppColors.textMuted;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -389,8 +469,8 @@ class _HomeItemCard extends StatelessWidget {
         gradient: entry.done
             ? LinearGradient(
                 colors: [
-                  accentColor.withValues(alpha: 0.12),
-                  accentColor.withValues(alpha: 0.03),
+                  accentColor.withValues(alpha: 0.10),
+                  accentColor.withValues(alpha: 0.02),
                 ],
               )
             : null,
@@ -415,7 +495,12 @@ class _HomeItemCard extends StatelessWidget {
                       : AppColors.borderGlass,
                 ),
               ),
-              child: CenteredEmoji(entry.emoji, size: 16),
+              child: CenteredEmoji(
+                entry.emoji.isNotEmpty
+                    ? entry.emoji
+                    : (isTodo ? '☑️' : (isHabit ? '✅' : '💊')),
+                size: 16,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -427,9 +512,7 @@ class _HomeItemCard extends StatelessWidget {
                 Text(
                   entry.title,
                   style: TextStyle(
-                    color: entry.done
-                        ? accentColor
-                        : AppColors.textPrimary,
+                    color: entry.done ? accentColor : AppColors.textPrimary,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
                     height: 1.2,
@@ -442,10 +525,18 @@ class _HomeItemCard extends StatelessWidget {
                     entry.subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: !entry.done &&
+                              isTodo &&
+                              entry.subtitle.startsWith('Overdue')
+                          ? AppColors.danger
+                          : AppColors.textMuted,
                       fontSize: 12,
                       height: 1.25,
+                      decoration: entry.done && isTodo
+                          ? TextDecoration.lineThrough
+                          : null,
+                      decorationColor: accentColor.withValues(alpha: 0.4),
                     ),
                   ),
               ],
@@ -458,31 +549,6 @@ class _HomeItemCard extends StatelessWidget {
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
               height: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ComingSoonCard extends StatelessWidget {
-  const _ComingSoonCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: AppDecorations.glassCard(),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'More features coming soon!',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -545,7 +611,7 @@ class _DailyProgressCard extends StatelessWidget {
   }
 }
 
-enum _HomeEntryType { habit, med }
+enum _HomeEntryType { habit, med, todo }
 
 class _HomeEntry {
   const _HomeEntry._({
@@ -599,6 +665,27 @@ class _HomeEntry {
       done: done,
       times: times,
       scheduleTimes: scheduleTimes,
+      emoji: emoji,
+      colorIndex: colorIndex,
+    );
+  }
+
+  factory _HomeEntry.todo({
+    required String id,
+    required String title,
+    required String subtitle,
+    required bool done,
+    String emoji = '☑️',
+    int colorIndex = 0,
+  }) {
+    return _HomeEntry._(
+      type: _HomeEntryType.todo,
+      id: id,
+      title: title,
+      subtitle: subtitle,
+      done: done,
+      times: 0,
+      scheduleTimes: const [],
       emoji: emoji,
       colorIndex: colorIndex,
     );
