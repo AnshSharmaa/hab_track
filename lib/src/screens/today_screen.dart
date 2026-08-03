@@ -285,7 +285,7 @@ class _HabitCard extends ConsumerWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadii.card),
           border: Border.all(
             color: isDone
                 ? habitColor.withValues(alpha: 0.55)
@@ -541,11 +541,10 @@ class _AddButton extends StatelessWidget {
         onTap();
       },
       child: Container(
-        width: 110,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: AppDecorations.glassChip(selected: true),
         child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.add, size: 16, color: AppColors.accentSoft),
             SizedBox(width: 4),
@@ -555,6 +554,7 @@ class _AddButton extends StatelessWidget {
                 color: AppColors.accentSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                height: 1.1,
               ),
             ),
           ],

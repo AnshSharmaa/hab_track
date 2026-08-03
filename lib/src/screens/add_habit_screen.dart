@@ -6,6 +6,7 @@ import '../providers.dart';
 import '../repositories/habit_repository.dart';
 import '../services/habit_notification_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import '../theme/habit_colors.dart';
 import '../widgets/centered_emoji.dart';
 
@@ -122,14 +123,14 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           const SizedBox(height: 20),
           _SectionLabel('HABIT DETAILS'),
           const SizedBox(height: 10),
-          _DarkField(
+          AppDarkField(
             controller: _titleController,
             label: 'What habit do you want to build?',
             placeholder: 'e.g. Drink water, Read 20 minutes…',
             autofocus: true,
           ),
           const SizedBox(height: 12),
-          _DarkField(
+          AppDarkField(
             controller: _notesController,
             label: 'Notes',
             placeholder: 'Optional reminder or motivation…',
@@ -142,7 +143,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _DayChip(
+              AppDayChip(
                 label: 'End of day check-in',
                 selected: _habitType == 'end_of_day',
                 onTap: () => setState(() {
@@ -150,7 +151,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                   _reminderTime ??= const TimeOfDay(hour: 21, minute: 0);
                 }),
               ),
-              _DayChip(
+              AppDayChip(
                 label: 'Timed reminder',
                 selected: _habitType == 'timed',
                 onTap: () => setState(() {
@@ -196,7 +197,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
             runSpacing: 8,
             children: _weekdayOrder
                 .map(
-                  (day) => _DayChip(
+                  (day) => AppDayChip(
                     label: _weekdayLabels[day]!,
                     selected: _selectedDays.contains(day),
                     onTap: () {
@@ -215,7 +216,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                 .toList(),
           ),
           const SizedBox(height: 32),
-          _SaveButton(
+          AppSaveButton(
             saving: _saving,
             label: widget.existingHabit == null
                 ? 'Create Habit'
@@ -298,16 +299,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: _reminderTime ?? TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6366F1),
-            secondary: Color(0xFF6366F1),
-            surface: Color(0xFF0F172A),
-          ),
-        ),
-        child: child!,
-      ),
+      builder: AppTheme.pickerOverlay,
     );
     if (selected != null) {
       setState(() => _reminderTime = selected);
@@ -527,158 +519,6 @@ class _SectionLabel extends StatelessWidget {
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
-      ),
-    );
-  }
-}
-
-class _DarkField extends StatelessWidget {
-  const _DarkField({
-    required this.controller,
-    required this.label,
-    required this.placeholder,
-    this.maxLines = 1,
-    this.autofocus = false,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final String placeholder;
-  final int maxLines;
-  final bool autofocus;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          autofocus: autofocus,
-          maxLines: maxLines,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
-          decoration: InputDecoration(
-            hintText: placeholder,
-            hintStyle: const TextStyle(
-              color: AppColors.textSubtle,
-              fontSize: 15,
-            ),
-            filled: true,
-            fillColor: AppColors.surfaceGlassSoft,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SaveButton extends StatelessWidget {
-  const _SaveButton({
-    required this.saving,
-    required this.label,
-    required this.onTap,
-  });
-  final bool saving;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: saving ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        height: 50,
-        decoration: BoxDecoration(
-          color: saving
-              ? AppColors.accent.withValues(alpha: 0.85)
-              : AppColors.accent.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.accentGlow,
-              blurRadius: 16,
-              spreadRadius: -4,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Center(
-          child: saving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.1,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DayChip extends StatelessWidget {
-  const _DayChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: AppDecorations.glassChip(selected: selected),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? AppColors.accentSoft : AppColors.textMuted,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
       ),
     );
   }

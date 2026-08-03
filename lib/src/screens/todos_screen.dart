@@ -44,33 +44,35 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
                 0,
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'TODOS',
-                        style: TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'TODOS',
+                          style: TextStyle(
+                            color: AppColors.textSubtle,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tasks & reminders',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: isPhone ? 22 : 26,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.5,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tasks & reminders',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: isPhone ? 22 : 26,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 12),
                   _AddButton(
                     onTap: () {
                       HapticFeedback.lightImpact();
@@ -100,7 +102,7 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 36,
+              height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: isPhone ? 16 : 28),
@@ -1047,7 +1049,7 @@ class _FilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: AppDecorations.glassChip(selected: selected),
         child: Text(
           label,
@@ -1055,6 +1057,7 @@ class _FilterChip extends StatelessWidget {
             color: selected ? AppColors.accentSoft : AppColors.textMuted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
+            height: 1.1,
           ),
         ),
       ),
@@ -1071,11 +1074,10 @@ class _AddButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 110,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: AppDecorations.glassChip(selected: true),
         child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.add, size: 16, color: AppColors.accentSoft),
             SizedBox(width: 4),
@@ -1085,6 +1087,7 @@ class _AddButton extends StatelessWidget {
                 color: AppColors.accentSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                height: 1.1,
               ),
             ),
           ],

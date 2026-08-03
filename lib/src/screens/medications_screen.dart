@@ -86,7 +86,7 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen> {
                     horizontal: 16,
                     vertical: 14,
                   ),
-                  decoration: AppDecorations.glassCard(elevated: true),
+                  decoration: AppDecorations.glassCard(),
                   child: Row(
                     children: [
                       _StatPill(label: 'Total meds', value: '${meds.length}'),
@@ -172,9 +172,7 @@ class _MedCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: AppDecorations.glassCard(
-        elevated: true,
-      ).copyWith(borderRadius: BorderRadius.circular(18)),
+      decoration: AppDecorations.glassCard().copyWith(borderRadius: BorderRadius.circular(18)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -418,11 +416,10 @@ class _AddButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 110,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: AppDecorations.glassChip(selected: true),
         child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.add, size: 16, color: AppColors.accentSoft),
             SizedBox(width: 4),
@@ -432,6 +429,7 @@ class _AddButton extends StatelessWidget {
                 color: AppColors.accentSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                height: 1.1,
               ),
             ),
           ],

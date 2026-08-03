@@ -58,33 +58,35 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                 0,
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'GOALS',
-                        style: TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'GOALS',
+                          style: TextStyle(
+                            color: AppColors.textSubtle,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Reward streaks',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: isPhone ? 22 : 26,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.5,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Reward streaks',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: isPhone ? 22 : 26,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 12),
                   _AddButton(onTap: _openCreateSheet),
                 ],
               ),
@@ -94,7 +96,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
               padding: EdgeInsets.symmetric(horizontal: isPhone ? 16 : 28),
               child: Container(
                 padding: const EdgeInsets.all(14),
-                decoration: AppDecorations.glassCard(elevated: true),
+                decoration: AppDecorations.glassCard(),
                 child: Row(
                   children: [
                     const Icon(
@@ -464,7 +466,7 @@ class _GoalCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: AppDecorations.glassCard(elevated: true),
+      decoration: AppDecorations.glassCard(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -612,11 +614,10 @@ class _AddButton extends StatelessWidget {
         onTap();
       },
       child: Container(
-        width: 110,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: AppDecorations.glassChip(selected: true),
         child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.add, size: 16, color: AppColors.accentSoft),
             SizedBox(width: 4),
@@ -626,6 +627,7 @@ class _AddButton extends StatelessWidget {
                 color: AppColors.accentSoft,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                height: 1.1,
               ),
             ),
           ],

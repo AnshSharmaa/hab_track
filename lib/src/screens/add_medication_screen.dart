@@ -6,6 +6,7 @@ import '../db/app_db.dart';
 import '../repositories/medication_repository.dart';
 import '../services/medication_notification_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 
 class AddMedicationScreen extends ConsumerStatefulWidget {
   const AddMedicationScreen({
@@ -100,7 +101,7 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
         children: [
           const _SectionLabel('MEDICATION DETAILS'),
           const SizedBox(height: 10),
-          _DarkField(
+          AppDarkField(
             controller: _nameController,
             label: 'Medicine name',
             placeholder: 'e.g. Vitamin D, Metformin…',
@@ -108,13 +109,13 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
-          _DarkField(
+          AppDarkField(
             controller: _dosageController,
             label: 'Dosage',
             placeholder: 'e.g. 500mg, 1 tablet…',
           ),
           const SizedBox(height: 12),
-          _DarkField(
+          AppDarkField(
             controller: _notesController,
             label: 'Notes',
             placeholder: 'e.g. Take with food…',
@@ -176,7 +177,7 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
           ),
 
           const SizedBox(height: 32),
-          _SaveButton(
+          AppSaveButton(
             saving: _saving,
             enabled: canSave,
             label: widget.existingMedication == null
@@ -204,43 +205,7 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6366F1),
-            secondary: Color(0xFF6366F1),
-            surface: Color(0xFF0F172A),
-          ),
-          timePickerTheme: TimePickerThemeData(
-            backgroundColor: const Color(0xFF0F172A),
-            dialBackgroundColor: const Color(0xFF111827),
-            dialHandColor: const Color(0xFF6366F1),
-            hourMinuteTextColor: WidgetStateColor.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Colors.white
-                  : const Color(0xFFE2E8F0),
-            ),
-            hourMinuteColor: WidgetStateColor.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? const Color(0xFF6366F1)
-                  : const Color(0xFF1E293B),
-            ),
-            dayPeriodTextColor: WidgetStateColor.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Colors.white
-                  : const Color(0xFFCBD5E1),
-            ),
-            dayPeriodColor: WidgetStateColor.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? const Color(0xFF6366F1)
-                  : const Color(0xFF1E293B),
-            ),
-            entryModeIconColor: const Color(0xFF818CF8),
-            helpTextStyle: const TextStyle(color: Color(0xFFCBD5E1)),
-          ),
-        ),
-        child: child!,
-      ),
+      builder: AppTheme.pickerOverlay,
     );
     if (selected == null) {
       return;
@@ -390,134 +355,6 @@ class _SectionLabel extends StatelessWidget {
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
-      ),
-    );
-  }
-}
-
-class _DarkField extends StatelessWidget {
-  const _DarkField({
-    required this.controller,
-    required this.label,
-    required this.placeholder,
-    this.maxLines = 1,
-    this.autofocus = false,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final String placeholder;
-  final int maxLines;
-  final bool autofocus;
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          autofocus: autofocus,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
-          decoration: InputDecoration(
-            hintText: placeholder,
-            hintStyle: const TextStyle(
-              color: AppColors.textSubtle,
-              fontSize: 15,
-            ),
-            filled: true,
-            fillColor: AppColors.surfaceGlassSoft,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SaveButton extends StatelessWidget {
-  const _SaveButton({
-    required this.saving,
-    required this.enabled,
-    required this.label,
-    required this.onTap,
-  });
-  final bool saving;
-  final bool enabled;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final active = enabled && !saving;
-    return GestureDetector(
-      onTap: active ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        height: 50,
-        decoration: BoxDecoration(
-          color: active
-              ? AppColors.accent.withValues(alpha: 0.95)
-              : AppColors.surfaceAlt,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: active
-              ? const [
-                  BoxShadow(
-                    color: AppColors.accentGlow,
-                    blurRadius: 16,
-                    spreadRadius: -4,
-                    offset: Offset(0, 10),
-                  ),
-                ]
-              : const [],
-        ),
-        child: Center(
-          child: saving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : Text(
-                  label,
-                  style: TextStyle(
-                    color: active ? Colors.white : AppColors.textSubtle,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-        ),
       ),
     );
   }

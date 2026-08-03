@@ -7,6 +7,7 @@ import 'src/providers.dart';
 import 'src/screens/app_shell.dart';
 import 'src/services/medication_notification_service.dart';
 import 'src/services/todo_notification_service.dart';
+import 'src/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,10 +78,8 @@ class _MainAppState extends ConsumerState<MainApp> {
   Widget build(BuildContext context) {
     return ShadApp(
       themeMode: ThemeMode.dark,
-      darkTheme: ShadThemeData(
-        brightness: Brightness.dark,
-        colorScheme: const ShadSlateColorScheme.dark(),
-      ),
+      darkTheme: AppTheme.shadDark,
+      materialThemeBuilder: AppTheme.materialBuilder,
       home: const AppShell(),
     );
   }

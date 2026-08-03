@@ -92,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           const Icon(
                             Icons.emoji_events_rounded,
-                            color: Color(0xFFF59E0B),
+                            color: AppColors.warning,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
