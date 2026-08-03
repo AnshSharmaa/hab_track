@@ -37,8 +37,8 @@ class _MainAppState extends ConsumerState<MainApp> {
       await MedicationNotificationService.instance.initialize();
       await TodoNotificationService.instance.initialize();
       if (kDebugMode) {
-        // Drop orphaned todo schedules before reseed (new UUIDs each run).
-        await TodoNotificationService.instance.cancelAllPendingTodos();
+        // Clear all orphaned schedules from prior dev runs, then reseed.
+        await TodoNotificationService.instance.cancelAllPending();
         final db = await ref.read(appDbProvider.future);
         final userId = ref.read(userIdProvider);
         await MockSeed(db).insertMockData(
@@ -62,10 +62,12 @@ class _MainAppState extends ConsumerState<MainApp> {
 
       final todoRepo = await ref.read(todoRepositoryProvider.future);
       final userId = ref.read(userIdProvider);
-      final openTodos = await todoRepo.getOpenTodosWithDetails(userId);
-      await TodoNotificationService.instance.resyncOpenTodos(
-        openTodos.map((t) => t.todo).toList(),
-      );
+      if (!kDebugMode) {
+        final openTodos = await todoRepo.getOpenTodosWithDetails(userId);
+        await TodoNotificationService.instance.resyncOpenTodos(
+          openTodos.map((t) => t.todo).toList(),
+        );
+      }
     } catch (error, _) {
       if (!mounted) return;
       ScaffoldMessenger.of(

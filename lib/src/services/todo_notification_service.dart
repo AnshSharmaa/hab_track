@@ -19,6 +19,9 @@ class TodoNotificationService {
   Future<void> cancelAllPendingTodos() =>
       AppNotificationService.instance.cancelAllPendingTodoNotifications();
 
+  Future<void> cancelAllPending() =>
+      AppNotificationService.instance.cancelAllPendingNotifications();
+
   Future<void> resyncOpenTodos(List<Todo> todos) =>
       AppNotificationService.instance.resyncTodoSchedules(todos);
 }

@@ -235,6 +235,15 @@ class AppNotificationService {
     }
   }
 
+  /// Cancels every pending OS notification. Debug cleanup only — prod startup
+  /// must not call this without also resyncing med/habit schedules.
+  Future<void> cancelAllPendingNotifications() async {
+    final pending = await notifications.pendingNotificationRequests();
+    for (final request in pending) {
+      await notifications.cancel(id: request.id);
+    }
+  }
+
   Future<void> resyncTodoSchedules(List<Todo> todos) async {
     await cancelAllPendingTodoNotifications();
     for (final todo in todos) {
