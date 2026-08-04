@@ -114,13 +114,9 @@ class _Sidebar extends StatelessWidget {
     return Container(
       width: 232,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.sidebar.withValues(alpha: 0.96),
-            AppColors.sidebar.withValues(alpha: 0.85),
-          ],
+        color: AppColors.sidebar, // Black Hole — darkest UI
+        border: const Border(
+          right: BorderSide(color: AppColors.borderGlass),
         ),
       ),
       child: Column(
@@ -131,12 +127,12 @@ class _Sidebar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: AppDecorations.glassCard(elevated: true),
+              decoration: AppDecorations.glassCard(),
               child: Row(
                 children: [
                   const Icon(
                     Icons.bolt_rounded,
-                    color: AppColors.accentSoft,
+                    color: AppColors.supernova,
                     size: 18,
                   ),
                   const SizedBox(width: 10),
@@ -206,7 +202,7 @@ class _Sidebar extends StatelessWidget {
             child: Text(
               'v0.1.0',
               style: TextStyle(
-                color: AppColors.textPrimary.withValues(alpha: 0.18),
+                color: AppColors.asteroid,
                 fontSize: 11,
               ),
             ),
@@ -244,7 +240,7 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: selected ? AppColors.accentSoft : AppColors.textSubtle,
+              color: selected ? AppColors.supernova : AppColors.textSubtle,
             ),
             const SizedBox(width: 10),
             Text(

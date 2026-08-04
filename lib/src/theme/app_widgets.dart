@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 
-/// Primary pill CTA used on add/edit forms.
+/// Primary CTA button used on add/edit forms.
+/// Railway style: Cosmic Lilac fill, Starlight text, 8px radius, 12px 24px padding.
 class AppSaveButton extends StatelessWidget {
   const AppSaveButton({
     super.key,
@@ -24,7 +25,7 @@ class AppSaveButton extends StatelessWidget {
       onTap: active ? onTap : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 50,
+        height: 48,
         decoration: AppDecorations.pillButton(enabled: active),
         child: Center(
           child: saving
@@ -32,7 +33,7 @@ class AppSaveButton extends StatelessWidget {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                     strokeWidth: 2,
                   ),
                 )
@@ -94,6 +95,7 @@ class AppDarkField extends StatelessWidget {
 }
 
 /// Selectable day / filter chip.
+/// Railway style: full pill radius, Supernova border when selected.
 class AppDayChip extends StatelessWidget {
   const AppDayChip({
     super.key,

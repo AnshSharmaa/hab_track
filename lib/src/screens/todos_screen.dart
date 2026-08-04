@@ -9,6 +9,7 @@ import '../services/todo_notification_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/habit_colors.dart';
 import '../widgets/centered_emoji.dart';
+import '../widgets/confetti_overlay.dart';
 import 'add_todo_screen.dart';
 
 class TodosScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class TodosScreen extends ConsumerStatefulWidget {
 }
 
 class _TodosScreenState extends ConsumerState<TodosScreen> {
+  int _confettiBursts = 0;
   bool _calendarMode = false;
   TodoSmartList _smartList = TodoSmartList.all;
   String? _tagFilterId;
@@ -30,9 +32,11 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
     final todosAsync = ref.watch(todosProvider);
     final tagsAsync = ref.watch(todoTagsProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: SafeArea(
+    return ConfettiOverlay(
+      burst: _confettiBursts,
+      child: Scaffold(
+        backgroundColor: AppColors.bg,
+        body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -201,7 +205,8 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Future<void> _complete(TodoWithDetails item) async {
@@ -212,6 +217,7 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
     if (updated.status == 'open') {
       await TodoNotificationService.instance.scheduleTodo(updated);
     }
+    setState(() => _confettiBursts++);
     _invalidate();
   }
 
@@ -235,6 +241,9 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
     HapticFeedback.selectionClick();
     final repo = await ref.read(todoRepositoryProvider.future);
     await repo.toggleSubtask(subtaskId, completed);
+    if (completed) {
+      setState(() => _confettiBursts++);
+    }
     _invalidate();
   }
 

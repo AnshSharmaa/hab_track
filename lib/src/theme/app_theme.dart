@@ -3,72 +3,83 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-/// HabTrack design tokens.
+/// HabTrack design tokens — Railway · Cosmic Midnight Express.
+///
+/// A calm, powerful journey through a dark, starlit environment.
+/// Deep near-black space (#13111c) with a single focused accent of
+/// cosmic lilac (#553f83) for primary actions.
 ///
 /// App-facing colors feed:
 /// - [AppTheme.colorScheme] / [AppTheme.shadDark] (shadcn)
 /// - [AppTheme.materialBuilder] (Material via ShadApp)
 /// - Direct screen usage (`AppColors.bg`, etc.)
-///
-/// Swap token values here to retheme without touching screen wiring.
 class AppColors {
-  // Surfaces (original HabTrack)
-  static const bg = Color(0xFF070B12);
-  static const bgSecondary = Color(0xFF0B1220);
-  static const sidebar = Color(0xFF0D1321);
-  static const surface = Color(0xFF141D2E);
-  static const surfaceAlt = Color(0xFF101929);
-  static const surfaceGlass = Color(0xB31A2438);
-  static const surfaceGlassSoft = Color(0x8C182133);
+  // Surfaces (Railway · Cosmic Midnight Express)
+  static const bg = Color(0xFF13111C); // Deep Space — page background
+  static const bgSecondary = Color(0xFF0D0C14); // Black Hole — darkest UI
+  static const sidebar = Color(0xFF0D0C14); // Black Hole
+  static const surface = Color(0xFF1A191F); // Surface — cards, secondary surfaces
+  static const surfaceAlt = Color(0xFF0D0C14); // Black Hole
+  static const surfaceGlass = Color(0xCC1A191F);
+  static const surfaceGlassSoft = Color(0x991A191F);
 
-  // Aliases kept for theme API stability (map onto original palette)
+  // Aliases kept for theme API stability
   static const abyss = bgSecondary;
   static const deepLagoon = surfaceAlt;
   static const midnightTide = bgSecondary;
 
   // Borders
-  static const border = Color(0xFF263247);
-  static const borderHairline = border;
-  static const borderGlass = Color(0x4DA7BBFF);
+  static const border = Color(0xFF33323E); // Crater
+  static const borderHairline = Color(0xFF33323E);
+  static const borderGlass = Color(0xFF33323E);
 
-  static const overlay = Color(0x66101826);
+  static const overlay = Color(0x6613111C);
 
-  // Text
-  static const textPrimary = Colors.white;
-  static const textMuted = Color(0xFFAAB8D1);
-  static const textSubtle = Color(0xFF72829F);
+  // Text (Railway)
+  static const textPrimary = Color(0xFFF7F7F8); // Starlight
+  static const textMuted = Color(0xFFD0CFD2); // Starlight Dim
+  static const textSubtle = Color(0xFFA1A0AB); // Comet
 
-  // Accent
-  static const accent = Color(0xFF91A0FF);
-  static const accentSoft = Color(0xFFC7D1FF);
-  static const accentGlow = Color(0x665A78FF);
-  static const tealPulse = Color(0xFF5A78FF);
+  // Accent (Railway · Cosmic Lilac + Supernova)
+  static const accent = Color(0xFF553F83); // Cosmic Lilac
+  static const accentSoft = Color(0xFFBF92EC); // Nebula Haze
+  static const accentGlow = Color(0x33A05FCF); // Supernova 20%
+  static const tealPulse = Color(0xFFA05FCF); // Supernova
+
+  // Railway named tokens
+  static const supernova = Color(0xFFA05FCF);
+  static const nebulaHaze = Color(0xFFBF92EC);
+  static const asteroid = Color(0xFF868593);
+  static const comet = Color(0xFFA1A0AB);
+  static const starlightDim = Color(0xFFD0CFD2);
+  static const crater = Color(0xFF33323E);
+  static const deepSpace = Color(0xFF13111C);
 
   // Semantic
-  static const success = Color(0xFF22C55E);
-  static const danger = Color(0xFFEF4444);
-  static const warning = Color(0xFFF59E0B);
-  static const highPriority = Color(0xFFB794F6);
+  static const success = Color(0xFF42946E);
+  static const danger = Color(0xFFD82C20);
+  static const warning = Color(0xFFA1A0AB); // Comet-based warning
+  static const highPriority = Color(0xFFBF92EC);
 
   // Picker theming (date / time pickers)
   static const pickerPrimary = accent;
   static const pickerSurface = surfaceAlt;
 
-  // Button state colors (alpha variants of accent)
-  static const accentHover = Color(0x1491A0FF);
-  static const accentPressed = Color(0x2891A0FF);
+  // Button state colors (alpha variants of cosmic lilac / supernova)
+  static const accentHover = Color(0x1A553F83);
+  static const accentPressed = Color(0x33553F83);
 
   static const confettiColors = <Color>[
-    Color(0xFFFFD700), // gold
-    Color(0xFFFF69B4), // hot pink
-    Color(0xFF00FFFF), // cyan
-    Color(0xFFFF4500), // orange red
-    Color(0xFF7FFF00), // chartreuse
-    Color(0xFFFF00FF), // magenta
-    Color(0xFF00BFFF), // deep sky blue
-    Color(0xFFFFD700), // gold
-    Color(0xFFFF1493), // deep pink
-    Color(0xFFADFF2F), // green yellow
+    Color(0xFFBF92EC), // nebula haze
+    Color(0xFFA05FCF), // supernova
+    Color(0xFF553F83), // cosmic lilac
+    Color(0xFFF7F7F8), // starlight
+    Color(0xFFD0CFD2), // starlight dim
+    Color(0xFF42946E), // success
+    Color(0xFFA05FCF), // supernova
+    Color(0xFFBF92EC), // nebula haze
+    Color(0xFFF7F7F8), // starlight
+    Color(0xFF553F83), // cosmic lilac
     Colors.white,
   ];
 }
@@ -76,130 +87,129 @@ class AppColors {
 class AppSpacing {
   static const double pageHorizontal = 20;
   static const double pageTop = 24;
-  static const double cardPadding = 20;
+  static const double cardPadding = 32; // Railway card padding
   static const double elementGap = 24;
 }
 
 class AppRadii {
-  static const double card = 12;
-  static const double button = 60;
-  static const double tag = 60;
-  static const double largePill = 37;
-  static const double input = 12;
+  static const double card = 12; // cards
+  static const double button = 8; // buttons
+  static const double tag = 9999; // tags — full pill
+  static const double largePill = 9999;
+  static const double input = 6; // inputs
 }
 
 class AppEffects {
-  static const double tileBloomBlur = 10;
-  static const double tileBloomSpread = -10;
-  static const Offset tileBloomOffset = Offset(0, 10);
+  // Railway elevation is expressed through surface shifts and borders,
+  // not shadows. The only "shadow" is an inset white highlight.
+  static const double tileBloomBlur = 0;
+  static const double tileBloomSpread = 0;
+  static const Offset tileBloomOffset = Offset.zero;
 
-  static const double chipBloomBlur = 6;
-  static const double chipBloomSpread = -5;
-  static const Offset chipBloomOffset = Offset(0, 3);
+  static const double chipBloomBlur = 0;
+  static const double chipBloomSpread = 0;
+  static const Offset chipBloomOffset = Offset.zero;
 
-  static const double glowBlur = tileBloomBlur;
-  static const double glowSpread = tileBloomSpread;
-  static const Offset glowOffset = tileBloomOffset;
+  static const double glowBlur = 0;
+  static const double glowSpread = 0;
+  static const Offset glowOffset = Offset.zero;
 
-  static const Color mintGlowShadow = AppColors.accentGlow;
+  static const Color mintGlowShadow = Color(0x1AFFFFFF); // subtle inset highlight
 }
 
 class AppTextStyles {
-  /// Playfair Display — Teodor substitute for editorial headlines.
+  /// Inter — eyebrow labels (uppercase tracking)
   static TextStyle get eyebrow => GoogleFonts.inter(
         color: AppColors.textSubtle,
         fontSize: 11,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
       );
 
-  static TextStyle get title => GoogleFonts.playfairDisplay(
+  /// IBM Plex Serif — section titles
+  static TextStyle get title => GoogleFonts.ibmPlexSerif(
         color: AppColors.textPrimary,
-        fontSize: 24,
-        fontWeight: FontWeight.w400,
-        height: 1.5,
+        fontSize: 26,
+        fontWeight: FontWeight.w500,
+        height: 1.20,
+        letterSpacing: -0.52,
       );
 
-  static TextStyle get heading => GoogleFonts.playfairDisplay(
+  /// IBM Plex Serif — large section headings
+  static TextStyle get heading => GoogleFonts.ibmPlexSerif(
         color: AppColors.textPrimary,
-        fontSize: 28,
-        fontWeight: FontWeight.w400,
-        height: 1.3,
+        fontSize: 32,
+        fontWeight: FontWeight.w500,
+        height: 1.20,
+        letterSpacing: -0.48,
       );
 
+  /// Inter — body copy
   static TextStyle get body => GoogleFonts.inter(
         color: AppColors.textMuted,
         fontSize: 16,
-        fontWeight: FontWeight.w300,
-        height: 1.5,
+        fontWeight: FontWeight.w400,
+        height: 1.6,
+        letterSpacing: -0.1,
       );
 
+  /// Inter — small body
   static TextStyle get bodySm => GoogleFonts.inter(
         color: AppColors.textMuted,
-        fontSize: 13,
-        fontWeight: FontWeight.w300,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
         height: 1.5,
+        letterSpacing: -0.14,
       );
 
+  /// Inter — caption
   static TextStyle get caption => GoogleFonts.inter(
         color: AppColors.textSubtle,
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.5,
+        letterSpacing: -0.12,
       );
 
+  /// Inter — chips / tags
   static TextStyle get chip => GoogleFonts.inter(
         color: AppColors.accentSoft,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       );
 
+  /// Inter — buttons
   static TextStyle get button => GoogleFonts.inter(
         color: AppColors.textPrimary,
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
       );
 
+  /// Inter — form labels
   static TextStyle get label => GoogleFonts.inter(
         color: AppColors.textMuted,
         fontSize: 13,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500,
       );
 }
 
 class AppDecorations {
   static LinearGradient pageGradient() {
     return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [AppColors.bg, AppColors.bgSecondary],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [AppColors.bg, Color(0xFF0F0D16)],
     );
   }
 
   static LinearGradient atmosphereGradient() => pageGradient();
 
   static BoxDecoration glassCard({bool elevated = false}) {
+    // Railway elevation = surface shift + 1px Crater border, no shadows.
     return BoxDecoration(
       borderRadius: BorderRadius.circular(AppRadii.card),
       border: Border.all(color: AppColors.borderGlass),
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          AppColors.surfaceGlass,
-          elevated ? AppColors.surface : AppColors.surfaceGlassSoft,
-        ],
-      ),
-      boxShadow: elevated
-          ? const [
-              BoxShadow(
-                color: AppColors.accentGlow,
-                blurRadius: AppEffects.tileBloomBlur,
-                spreadRadius: AppEffects.tileBloomSpread,
-                offset: AppEffects.tileBloomOffset,
-              ),
-            ]
-          : const [],
+      color: elevated ? AppColors.surface : AppColors.surfaceGlass,
     );
   }
 
@@ -210,23 +220,11 @@ class AppDecorations {
     return BoxDecoration(
       borderRadius: BorderRadius.circular(AppRadii.tag),
       border: Border.all(
-        color: selected
-            ? AppColors.accent.withValues(alpha: 0.65)
-            : AppColors.borderGlass,
+        color: selected ? AppColors.supernova : AppColors.borderGlass,
       ),
       color: selected
-          ? AppColors.accent.withValues(alpha: 0.16)
+          ? AppColors.accent.withValues(alpha: 0.20)
           : AppColors.surfaceGlassSoft,
-      boxShadow: selected
-          ? const [
-              BoxShadow(
-                color: AppColors.accentGlow,
-                blurRadius: AppEffects.chipBloomBlur,
-                spreadRadius: AppEffects.chipBloomSpread,
-                offset: AppEffects.chipBloomOffset,
-              ),
-            ]
-          : const [],
     );
   }
 
@@ -234,7 +232,7 @@ class AppDecorations {
     return BoxDecoration(
       borderRadius: BorderRadius.circular(AppRadii.tag),
       color: Colors.transparent,
-      border: Border.all(color: AppColors.accent.withValues(alpha: 0.55)),
+      border: Border.all(color: AppColors.supernova),
     );
   }
 
@@ -243,21 +241,11 @@ class AppDecorations {
     return BoxDecoration(
       borderRadius: BorderRadius.circular(AppRadii.button),
       color: active
-          ? AppColors.accent.withValues(alpha: 0.95)
+          ? AppColors.accent
           : (primary ? AppColors.surfaceAlt : Colors.transparent),
       border: primary
-          ? null
-          : Border.all(color: AppColors.accent.withValues(alpha: 0.55)),
-      boxShadow: active
-          ? const [
-              BoxShadow(
-                color: AppColors.accentGlow,
-                blurRadius: 16,
-                spreadRadius: -4,
-                offset: Offset(0, 10),
-              ),
-            ]
-          : const [],
+          ? Border.all(color: const Color(0x26FFFFFF)) // rgba(255,255,255,0.15)
+          : Border.all(color: AppColors.borderGlass),
     );
   }
 
@@ -279,7 +267,7 @@ class AppDecorations {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: radius,
-        borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.supernova, width: 1.5),
       ),
     );
   }
@@ -309,10 +297,10 @@ class AppTheme {
     destructiveForeground: AppColors.textPrimary,
     border: AppColors.border,
     input: AppColors.border,
-    ring: AppColors.accent,
+    ring: AppColors.tealPulse,
     selection: AppColors.accentGlow,
     custom: {
-      'mintGlow': AppColors.accent,
+      'mintGlow': AppColors.tealPulse,
       'mintSoft': AppColors.accentSoft,
       'tealPulse': AppColors.tealPulse,
       'success': AppColors.success,
@@ -331,14 +319,12 @@ class AppTheme {
         primaryButtonTheme: const ShadButtonTheme(
           backgroundColor: AppColors.accent,
           foregroundColor: AppColors.textPrimary,
-          hoverBackgroundColor: AppColors.accentSoft,
-          pressedBackgroundColor: AppColors.tealPulse,
         ),
         outlineButtonTheme: const ShadButtonTheme(
           backgroundColor: Colors.transparent,
-          foregroundColor: AppColors.accent,
-          hoverBackgroundColor: AppColors.accentHover,
-          pressedBackgroundColor: AppColors.accentPressed,
+          foregroundColor: AppColors.textPrimary,
+          hoverBackgroundColor: Colors.transparent,
+          pressedBackgroundColor: Colors.transparent,
         ),
         destructiveButtonTheme: const ShadButtonTheme(
           backgroundColor: AppColors.danger,
@@ -406,7 +392,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceGlassSoft,
-        selectedColor: AppColors.accent.withValues(alpha: 0.16),
+        selectedColor: AppColors.accent.withValues(alpha: 0.20),
         side: const BorderSide(color: AppColors.borderGlass),
         labelStyle: AppTextStyles.chip,
         shape: RoundedRectangleBorder(
@@ -417,7 +403,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceGlassSoft,
-        hintStyle: GoogleFonts.inter(color: AppColors.textSubtle, fontSize: 15),
+        hintStyle: GoogleFonts.inter(
+          color: AppColors.textSubtle,
+          fontSize: 15,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -432,7 +421,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.input),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.tealPulse, width: 1.5),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -440,25 +429,26 @@ class AppTheme {
           backgroundColor: AppColors.accent,
           foregroundColor: AppColors.textPrimary,
           textStyle: AppTextStyles.button,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.button),
           ),
+          side: const BorderSide(color: Color(0x26FFFFFF)),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.accent,
-          side: const BorderSide(color: AppColors.accent),
-          textStyle: AppTextStyles.button.copyWith(color: AppColors.accent),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.borderGlass),
+          textStyle: AppTextStyles.button,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.button),
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+        style: TextButton.styleFrom(foregroundColor: AppColors.supernova),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.accent,
@@ -475,11 +465,11 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
-        indicatorColor: AppColors.accent.withValues(alpha: 0.26),
+        indicatorColor: AppColors.accent.withValues(alpha: 0.35),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return GoogleFonts.inter(
-            color: selected ? AppColors.accentSoft : AppColors.textSubtle,
+            color: selected ? AppColors.textPrimary : AppColors.textSubtle,
             fontSize: 12,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
           );
@@ -487,24 +477,24 @@ class AppTheme {
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: selected ? AppColors.accentSoft : AppColors.textSubtle,
+            color: selected ? AppColors.supernova : AppColors.textSubtle,
           );
         }),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? AppColors.accentSoft
-              : AppColors.textSubtle;
+              ? AppColors.textPrimary
+              : AppColors.asteroid;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? AppColors.accent.withValues(alpha: 0.5)
+              ? AppColors.accent.withValues(alpha: 0.7)
               : AppColors.surfaceAlt;
         }),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.accent,
+        color: AppColors.supernova,
         linearTrackColor: AppColors.surfaceAlt,
       ),
       snackBarTheme: SnackBarThemeData(
@@ -512,6 +502,7 @@ class AppTheme {
         contentTextStyle: GoogleFonts.inter(color: AppColors.textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
+          side: const BorderSide(color: AppColors.borderGlass),
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -520,42 +511,78 @@ class AppTheme {
         backgroundColor: AppColors.surfaceAlt,
         headerBackgroundColor: AppColors.surface,
         dayForegroundColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppColors.textPrimary;
-          }
           return AppColors.textPrimary;
         }),
         dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) return AppColors.accent;
           return Colors.transparent;
         }),
-        todayForegroundColor: const WidgetStatePropertyAll(AppColors.accent),
-        todayBorder: const BorderSide(color: AppColors.accent),
+        todayForegroundColor: const WidgetStatePropertyAll(AppColors.supernova),
+        todayBorder: const BorderSide(color: AppColors.supernova),
       ),
       textTheme: inter.copyWith(
-        displayLarge: GoogleFonts.playfairDisplay(
+        displayLarge: GoogleFonts.ibmPlexSerif(
           color: AppColors.textPrimary,
-          fontSize: 35,
-          fontWeight: FontWeight.w400,
-          height: 1.0,
+          fontSize: 40,
+          fontWeight: FontWeight.w500,
+          height: 1.2,
+          letterSpacing: -0.6,
         ),
-        headlineMedium: AppTextStyles.heading,
-        titleLarge: AppTextStyles.title,
-        bodyLarge: AppTextStyles.body,
-        bodyMedium: AppTextStyles.bodySm,
-        bodySmall: AppTextStyles.caption,
-        labelLarge: AppTextStyles.button,
-        labelSmall: AppTextStyles.eyebrow,
+        headlineMedium: GoogleFonts.ibmPlexSerif(
+          color: AppColors.textPrimary,
+          fontSize: 36,
+          fontWeight: FontWeight.w500,
+          height: 1.2,
+          letterSpacing: -0.72,
+        ),
+        titleLarge: GoogleFonts.ibmPlexSerif(
+          color: AppColors.textPrimary,
+          fontSize: 24,
+          fontWeight: FontWeight.w500,
+          height: 1.33,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          color: AppColors.textMuted,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.6,
+          letterSpacing: -0.1,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          color: AppColors.textMuted,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          letterSpacing: -0.14,
+        ),
+        bodySmall: GoogleFonts.inter(
+          color: AppColors.textSubtle,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          letterSpacing: -0.12,
+        ),
+        labelLarge: GoogleFonts.inter(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        labelSmall: GoogleFonts.inter(
+          color: AppColors.textSubtle,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
+        ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.accentSoft),
+      iconTheme: const IconThemeData(color: AppColors.supernova),
     );
   }
 
   static TimePickerThemeData _timePickerTheme() {
     return TimePickerThemeData(
       backgroundColor: AppColors.surfaceAlt,
-      dialBackgroundColor: AppColors.bg,
-      dialHandColor: AppColors.accent,
+      dialBackgroundColor: AppColors.surface,
+      dialHandColor: AppColors.supernova,
       hourMinuteTextColor: WidgetStateColor.resolveWith(
         (states) => states.contains(WidgetState.selected)
             ? AppColors.textPrimary
@@ -576,7 +603,7 @@ class AppTheme {
             ? AppColors.accent
             : AppColors.surface,
       ),
-      entryModeIconColor: AppColors.accentSoft,
+      entryModeIconColor: AppColors.supernova,
       helpTextStyle: GoogleFonts.inter(color: AppColors.textMuted),
     );
   }

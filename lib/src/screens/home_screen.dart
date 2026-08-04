@@ -24,7 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _showConfetti = false;
+  int _confettiBursts = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : 'Good evening';
 
     return ConfettiOverlay(
-      show: _showConfetti,
+      burst: _confettiBursts,
       child: Scaffold(
         backgroundColor: AppColors.bg,
         body: SafeArea(
@@ -322,12 +322,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await repo.toggleHabitInstance(entry.id, todayIso());
 
       if (!entry.done) {
-        setState(() => _showConfetti = true);
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() => _showConfetti = false);
-          }
-        });
+        setState(() => _confettiBursts++);
       }
 
       ref.invalidate(todayHabitsProvider);
@@ -350,12 +345,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (updated.status == 'open') {
           await TodoNotificationService.instance.scheduleTodo(updated);
         }
-        setState(() => _showConfetti = true);
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() => _showConfetti = false);
-          }
-        });
+        setState(() => _confettiBursts++);
       }
       ref.invalidate(todosProvider);
       ref.invalidate(homeTodosProvider);
@@ -375,12 +365,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (!entry.done) {
-      setState(() => _showConfetti = true);
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() => _showConfetti = false);
-        }
-      });
+      setState(() => _confettiBursts++);
     }
 
     ref.invalidate(medicationDoseHistoryProvider);

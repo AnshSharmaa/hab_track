@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
 class HabitColors {
+  /// Railway cosmic palette — purple-toned accents that stay within the
+  /// starlit night theme. These are the only accents used for habits/todos.
   static const List<Color> accentColors = [
-    Color(0xFF6366F1), // indigo
-    Color(0xFFEC4899), // pink
-    Color(0xFF10B981), // emerald
-    Color(0xFFF59E0B), // amber
-    Color(0xFF3B82F6), // blue
-    Color(0xFF8B5CF6), // violet
-    Color(0xFFEF4444), // red
-    Color(0xFF14B8A6), // teal
-    Color(0xFFF97316), // orange
-    Color(0xFF06B6D4), // cyan
+    Color(0xFFA05FCF), // supernova
+    Color(0xFFBF92EC), // nebula haze
+    Color(0xFF553F83), // cosmic lilac
+    Color(0xFF8E6BC4), // muted violet
+    Color(0xFF7A5AA8), // twilight orchid
+    Color(0xFF9B7EDE), // soft lavender
+    Color(0xFF6B4E9E), // deep purple
+    Color(0xFFC4A7F0), // pale lilac
+    Color(0xFF5A4599), // indigo night
+    Color(0xFFA88BD6), // dusty violet
   ];
 
   static List<String> defaultEmojis = [

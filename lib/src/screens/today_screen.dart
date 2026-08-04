@@ -25,7 +25,7 @@ class TodayScreen extends ConsumerStatefulWidget {
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
   String? _justCompletedHabitId;
-  bool _showConfetti = false;
+  int _confettiBursts = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +119,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                     return todayInstancesAsync.when(
                       data: (instanceMap) => statsAsync.when(
                         data: (statsMap) => ConfettiOverlay(
-                          show: _showConfetti,
+                          burst: _confettiBursts,
                           child: ReorderableListView.builder(
                             padding: EdgeInsets.fromLTRB(
                               isPhone ? 12 : 24,
@@ -227,14 +227,13 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     if (!wasDone) {
       setState(() {
         _justCompletedHabitId = habit.id;
-        _showConfetti = true;
+        _confettiBursts++;
       });
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() {
-          _justCompletedHabitId = null;
-          _showConfetti = false;
-        });
+            _justCompletedHabitId = null;
+          });
         }
       });
     }
