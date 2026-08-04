@@ -32,14 +32,16 @@ class AppSaveButton extends StatelessWidget {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     strokeWidth: 2,
                   ),
                 )
               : Text(
                   label,
                   style: AppTextStyles.button.copyWith(
-                    color: active ? Colors.white : AppColors.textSubtle,
+                    color: active
+                        ? AppColors.textPrimary
+                        : AppColors.textSubtle,
                   ),
                 ),
         ),
@@ -79,7 +81,11 @@ class AppDarkField extends StatelessWidget {
           autofocus: autofocus,
           maxLines: maxLines,
           onChanged: onChanged,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+          ),
           decoration: AppDecorations.field(hintText: placeholder),
         ),
       ],

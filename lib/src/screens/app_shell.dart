@@ -132,21 +132,19 @@ class _Sidebar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: AppDecorations.glassCard(elevated: true),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.bolt_rounded,
                     color: AppColors.accentSoft,
                     size: 18,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Text(
                     'HabTrack',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
+                    style: AppTextStyles.title.copyWith(
+                      fontSize: 18,
+                      height: 1.2,
                     ),
                   ),
                 ],

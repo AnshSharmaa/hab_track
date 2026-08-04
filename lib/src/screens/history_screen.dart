@@ -56,24 +56,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'HISTORY',
-                  style: TextStyle(
-                    color: AppColors.textSubtle,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
+                  style: AppTextStyles.eyebrow,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Habit analytics',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isPhone ? 22 : 26,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                  ),
+                  style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
                 ),
                 const SizedBox(height: 14),
                 SingleChildScrollView(
@@ -131,12 +121,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                               backgroundColor: AppColors.surface,
                               title: const Text(
                                 'Custom time range',
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: AppColors.textPrimary),
                               ),
                               content: TextField(
                                 controller: controller,
                                 keyboardType: TextInputType.number,
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(color: AppColors.textPrimary),
                                 decoration: const InputDecoration(
                                   hintText: 'Enter days (e.g. 45)',
                                   hintStyle: TextStyle(
@@ -328,7 +318,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const Text(
                           'Trend',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -377,7 +367,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const Text(
                           'Heatmap',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -457,7 +447,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const Text(
                           'Habits',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -548,7 +538,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const Text(
                           'Medications',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -637,7 +627,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         const Text(
                           'Todos',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -798,7 +788,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         backgroundColor: AppColors.surface,
         title: Text(
           'Activity • $iso',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.textPrimary),
         ),
         content: SizedBox(
           width: MediaQuery.sizeOf(context).width > 620
@@ -812,7 +802,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 const Text(
                   'Habits',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -820,7 +810,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 if (habitActivity.isEmpty)
                   const Text(
                     'No habit activity',
-                    style: TextStyle(color: Color(0xFF64748B)),
+                    style: TextStyle(color: AppColors.textSubtle),
                   )
                 else
                   ...habitActivity.map(
@@ -828,7 +818,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         a,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppColors.textPrimary),
                       ),
                     ),
                   ),
@@ -836,7 +826,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 const Text(
                   'Medications',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -844,7 +834,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 if (medActivity.isEmpty)
                   const Text(
                     'No medication activity',
-                    style: TextStyle(color: Color(0xFF64748B)),
+                    style: TextStyle(color: AppColors.textSubtle),
                   )
                 else
                   ...medActivity.map(
@@ -852,7 +842,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         a,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppColors.textPrimary),
                       ),
                     ),
                   ),
@@ -860,7 +850,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 const Text(
                   'Todos',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -871,8 +861,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       : '$todoCount todo${todoCount == 1 ? '' : 's'} completed',
                   style: TextStyle(
                     color: todoCount == 0
-                        ? const Color(0xFF64748B)
-                        : Colors.white,
+                        ? AppColors.textSubtle
+                        : AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -921,7 +911,7 @@ class _HistoryCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1002,7 +992,7 @@ class _DropdownFilter<T> extends StatelessWidget {
             value: value,
             isExpanded: true,
             dropdownColor: AppColors.surfaceAlt,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
             iconEnabledColor: AppColors.textMuted,
             hint: Text(label),
             items: items,
@@ -1047,7 +1037,7 @@ class _ContributionHeatmapCard extends StatelessWidget {
             const Text(
               'Daily completion intensity',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -1076,7 +1066,7 @@ class _ContributionHeatmapCard extends StatelessWidget {
                 showColorTip: true,
                 size: 18,
                 borderRadius: 3,
-                colorsets: const {1: Color(0xFF22C55E)},
+                colorsets: const {1: AppColors.success},
                 onClick: onDayTap,
               ),
             const SizedBox(height: 6),
@@ -1242,12 +1232,12 @@ class _TrendChartCard extends StatelessWidget {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: const Color(0xFF22C55E),
+              color: AppColors.success,
               barWidth: 2.5,
               dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
-                color: const Color(0xFF22C55E).withValues(alpha: 0.15),
+                color: AppColors.success.withValues(alpha: 0.15),
               ),
             ),
           ],
@@ -1283,7 +1273,7 @@ class _MedicationHistoryCard extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1316,10 +1306,10 @@ class _DoseStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final normalized = status ?? 'pending';
     final color = switch (normalized) {
-      'taken' => const Color(0xFF22C55E),
-      'skipped' => const Color(0xFFEF4444),
-      'snoozed' => const Color(0xFFF59E0B),
-      _ => const Color(0xFF64748B),
+      'taken' => AppColors.success,
+      'skipped' => AppColors.danger,
+      'snoozed' => AppColors.warning,
+      _ => AppColors.textSubtle,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -118,14 +118,14 @@ class _AddTodoScreenState extends ConsumerState<AddTodoScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text(
           'Todo',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
@@ -498,7 +498,7 @@ class _AddTodoScreenState extends ConsumerState<AddTodoScreen> {
               Expanded(
                 child: TextField(
                   controller: _subtaskController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Add a subtask…',
                     hintStyle: const TextStyle(
@@ -577,8 +577,8 @@ class _AddTodoScreenState extends ConsumerState<AddTodoScreen> {
       builder: (context, child) => Theme(
         data: ThemeData.dark().copyWith(
           colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6366F1),
-            surface: Color(0xFF0F172A),
+            primary: AppColors.pickerPrimary,
+            surface: AppColors.pickerSurface,
           ),
         ),
         child: child!,
@@ -594,8 +594,8 @@ class _AddTodoScreenState extends ConsumerState<AddTodoScreen> {
       builder: (context, child) => Theme(
         data: ThemeData.dark().copyWith(
           colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6366F1),
-            surface: Color(0xFF0F172A),
+            primary: AppColors.pickerPrimary,
+            surface: AppColors.pickerSurface,
           ),
         ),
         child: child!,
@@ -617,7 +617,7 @@ class _AddTodoScreenState extends ConsumerState<AddTodoScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.textPrimary),
           decoration: const InputDecoration(
             hintText: 'Tag name',
             hintStyle: TextStyle(color: AppColors.textSubtle),
@@ -911,7 +911,7 @@ class _EmojiColorPicker extends StatelessWidget {
                             color: HabitColors.getColor(i),
                             shape: BoxShape.circle,
                             border: colorIndex == i
-                                ? Border.all(color: Colors.white, width: 2.5)
+                                ? Border.all(color: AppColors.textPrimary, width: 2.5)
                                 : null,
                             boxShadow: colorIndex == i
                                 ? [
@@ -996,7 +996,7 @@ class _DarkField extends StatelessWidget {
           autofocus: autofocus,
           maxLines: maxLines,
           onChanged: onChanged,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: placeholder,
             hintStyle: const TextStyle(
@@ -1070,14 +1070,14 @@ class _SaveButton extends StatelessWidget {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     strokeWidth: 2,
                   ),
                 )
               : Text(
                   label,
                   style: TextStyle(
-                    color: active ? Colors.white : AppColors.textSubtle,
+                    color: active ? AppColors.textPrimary : AppColors.textSubtle,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),

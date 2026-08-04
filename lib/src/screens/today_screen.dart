@@ -56,24 +56,14 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'HABITS',
-                        style: TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
+                        style: AppTextStyles.eyebrow,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Today\'s habits',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: isPhone ? 22 : 26,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.5,
-                        ),
+                        style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
                       ),
                     ],
                   ),
@@ -436,12 +426,12 @@ class _HabitCard extends ConsumerWidget {
                       backgroundColor: AppColors.surface,
                       title: const Text(
                         'Today note',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppColors.textPrimary),
                       ),
                       content: TextField(
                         controller: controller,
                         maxLines: 3,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppColors.textPrimary),
                         decoration: const InputDecoration(
                           hintText: 'Write a quick note...',
                           hintStyle: TextStyle(color: AppColors.textSubtle),
@@ -474,7 +464,7 @@ class _HabitCard extends ConsumerWidget {
                       backgroundColor: AppColors.surface,
                       title: const Text(
                         'Delete habit?',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppColors.textPrimary),
                       ),
                       content: const Text(
                         'This will remove it from your active list.',
@@ -504,20 +494,20 @@ class _HabitCard extends ConsumerWidget {
               itemBuilder: (_) => const [
                 PopupMenuItem(
                   value: 'edit',
-                  child: Text('Edit', style: TextStyle(color: Colors.white)),
+                  child: Text('Edit', style: TextStyle(color: AppColors.textPrimary)),
                 ),
                 PopupMenuItem(
                   value: 'note',
                   child: Text(
                     'Add note',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                 ),
                 PopupMenuItem(
                   value: 'delete',
                   child: Text(
                     'Delete',
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(color: AppColors.danger),
                   ),
                 ),
               ],

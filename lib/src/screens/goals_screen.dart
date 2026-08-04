@@ -64,24 +64,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'GOALS',
-                          style: TextStyle(
-                            color: AppColors.textSubtle,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
+                          style: AppTextStyles.eyebrow,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Reward streaks',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: isPhone ? 22 : 26,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
-                          ),
+                          style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
                         ),
                       ],
                     ),
@@ -437,7 +427,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.textPrimary,
                         ),
                         child: const Text('Save goal'),
                       ),
@@ -658,7 +648,7 @@ class _EmptyGoalState extends StatelessWidget {
             onPressed: onCreate,
             icon: const Icon(Icons.add_rounded),
             label: const Text('Create your first goal'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: AppColors.textPrimary),
           ),
         ],
       ),

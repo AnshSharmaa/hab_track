@@ -43,24 +43,14 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'MEDICATIONS',
-                        style: TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
+                        style: AppTextStyles.eyebrow,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Daily reminders',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: isPhone ? 22 : 26,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.5,
-                        ),
+                        style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
                       ),
                     ],
                   ),
@@ -249,7 +239,7 @@ class _MedCard extends ConsumerWidget {
                         backgroundColor: AppColors.surface,
                         title: const Text(
                           'Delete medication?',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: AppColors.textPrimary),
                         ),
                         content: const Text(
                           'This will remove it from your active list.',
@@ -284,13 +274,13 @@ class _MedCard extends ConsumerWidget {
                 itemBuilder: (_) => const [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text('Edit', style: TextStyle(color: Colors.white)),
+                    child: Text('Edit', style: TextStyle(color: AppColors.textPrimary)),
                   ),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(
                       'Delete',
-                      style: TextStyle(color: Colors.redAccent),
+                      style: TextStyle(color: AppColors.danger),
                     ),
                   ),
                 ],
@@ -303,7 +293,7 @@ class _MedCard extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
+                color: AppColors.surfaceGlassSoft,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(

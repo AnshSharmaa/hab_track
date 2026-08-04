@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 /// HabTrack design tokens.
@@ -47,19 +48,42 @@ class AppColors {
   static const success = Color(0xFF22C55E);
   static const danger = Color(0xFFEF4444);
   static const warning = Color(0xFFF59E0B);
+  static const highPriority = Color(0xFFB794F6);
+
+  // Picker theming (date / time pickers)
+  static const pickerPrimary = accent;
+  static const pickerSurface = surfaceAlt;
+
+  // Button state colors (alpha variants of accent)
+  static const accentHover = Color(0x1491A0FF);
+  static const accentPressed = Color(0x2891A0FF);
+
+  static const confettiColors = <Color>[
+    Color(0xFFFFD700), // gold
+    Color(0xFFFF69B4), // hot pink
+    Color(0xFF00FFFF), // cyan
+    Color(0xFFFF4500), // orange red
+    Color(0xFF7FFF00), // chartreuse
+    Color(0xFFFF00FF), // magenta
+    Color(0xFF00BFFF), // deep sky blue
+    Color(0xFFFFD700), // gold
+    Color(0xFFFF1493), // deep pink
+    Color(0xFFADFF2F), // green yellow
+    Colors.white,
+  ];
 }
 
 class AppSpacing {
   static const double pageHorizontal = 20;
   static const double pageTop = 24;
-  static const double cardPadding = 16;
+  static const double cardPadding = 20;
   static const double elementGap = 24;
 }
 
 class AppRadii {
-  static const double card = 16;
-  static const double button = 12;
-  static const double tag = 999;
+  static const double card = 12;
+  static const double button = 60;
+  static const double tag = 60;
   static const double largePill = 37;
   static const double input = 12;
 }
@@ -81,65 +105,66 @@ class AppEffects {
 }
 
 class AppTextStyles {
-  static const eyebrow = TextStyle(
-    color: AppColors.textSubtle,
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.2,
-  );
+  /// Playfair Display — Teodor substitute for editorial headlines.
+  static TextStyle get eyebrow => GoogleFonts.inter(
+        color: AppColors.textSubtle,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      );
 
-  static const title = TextStyle(
-    color: AppColors.textPrimary,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    height: 1.3,
-  );
+  static TextStyle get title => GoogleFonts.playfairDisplay(
+        color: AppColors.textPrimary,
+        fontSize: 24,
+        fontWeight: FontWeight.w400,
+        height: 1.5,
+      );
 
-  static const heading = TextStyle(
-    color: AppColors.textPrimary,
-    fontSize: 26,
-    fontWeight: FontWeight.w700,
-    height: 1.2,
-  );
+  static TextStyle get heading => GoogleFonts.playfairDisplay(
+        color: AppColors.textPrimary,
+        fontSize: 28,
+        fontWeight: FontWeight.w400,
+        height: 1.3,
+      );
 
-  static const body = TextStyle(
-    color: AppColors.textMuted,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
+  static TextStyle get body => GoogleFonts.inter(
+        color: AppColors.textMuted,
+        fontSize: 16,
+        fontWeight: FontWeight.w300,
+        height: 1.5,
+      );
 
-  static const bodySm = TextStyle(
-    color: AppColors.textMuted,
-    fontSize: 13,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
+  static TextStyle get bodySm => GoogleFonts.inter(
+        color: AppColors.textMuted,
+        fontSize: 13,
+        fontWeight: FontWeight.w300,
+        height: 1.5,
+      );
 
-  static const caption = TextStyle(
-    color: AppColors.textSubtle,
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
+  static TextStyle get caption => GoogleFonts.inter(
+        color: AppColors.textSubtle,
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        height: 1.5,
+      );
 
-  static const chip = TextStyle(
-    color: AppColors.accentSoft,
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle get chip => GoogleFonts.inter(
+        color: AppColors.accentSoft,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      );
 
-  static const button = TextStyle(
-    color: AppColors.textPrimary,
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle get button => GoogleFonts.inter(
+        color: AppColors.textPrimary,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      );
 
-  static const label = TextStyle(
-    color: AppColors.textMuted,
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-  );
+  static TextStyle get label => GoogleFonts.inter(
+        color: AppColors.textMuted,
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+      );
 }
 
 class AppDecorations {
@@ -178,7 +203,7 @@ class AppDecorations {
     );
   }
 
-  /// Alias for elevated glass — keep API for featured surfaces.
+  /// Alias for elevated surfaces — keep API for featured cards.
   static BoxDecoration glowCard() => glassCard(elevated: true);
 
   static BoxDecoration glassChip({required bool selected}) {
@@ -240,7 +265,7 @@ class AppDecorations {
     final radius = BorderRadius.circular(AppRadii.input);
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 15),
+      hintStyle: GoogleFonts.inter(color: AppColors.textSubtle, fontSize: 15),
       filled: true,
       fillColor: AppColors.surfaceGlassSoft,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -312,8 +337,8 @@ class AppTheme {
         outlineButtonTheme: const ShadButtonTheme(
           backgroundColor: Colors.transparent,
           foregroundColor: AppColors.accent,
-          hoverBackgroundColor: Color(0x1491A0FF),
-          pressedBackgroundColor: Color(0x2891A0FF),
+          hoverBackgroundColor: AppColors.accentHover,
+          pressedBackgroundColor: AppColors.accentPressed,
         ),
         destructiveButtonTheme: const ShadButtonTheme(
           backgroundColor: AppColors.danger,
@@ -323,8 +348,8 @@ class AppTheme {
           backgroundColor: AppColors.surface,
           padding: EdgeInsets.all(AppSpacing.cardPadding),
         ),
-        inputTheme: const ShadInputTheme(
-          placeholderStyle: TextStyle(
+        inputTheme: ShadInputTheme(
+          placeholderStyle: GoogleFonts.inter(
             color: AppColors.textSubtle,
             fontSize: 15,
           ),
@@ -336,10 +361,17 @@ class AppTheme {
     final scheme = base.colorScheme.copyWith(
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
+      primary: AppColors.accent,
+      onPrimary: AppColors.textPrimary,
       secondary: AppColors.tealPulse,
       onSecondary: AppColors.textPrimary,
       outline: AppColors.border,
       surfaceContainerHighest: AppColors.surfaceAlt,
+    );
+
+    final inter = GoogleFonts.interTextTheme(base.textTheme).apply(
+      bodyColor: AppColors.textMuted,
+      displayColor: AppColors.textPrimary,
     );
 
     return base.copyWith(
@@ -385,7 +417,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceGlassSoft,
-        hintStyle: const TextStyle(color: AppColors.textSubtle, fontSize: 15),
+        hintStyle: GoogleFonts.inter(color: AppColors.textSubtle, fontSize: 15),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -432,12 +464,21 @@ class AppTheme {
         backgroundColor: AppColors.accent,
         foregroundColor: AppColors.textPrimary,
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          foregroundColor: AppColors.textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.button),
+          ),
+        ),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
         indicatorColor: AppColors.accent.withValues(alpha: 0.26),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
-          return TextStyle(
+          return GoogleFonts.inter(
             color: selected ? AppColors.accentSoft : AppColors.textSubtle,
             fontSize: 12,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
@@ -468,7 +509,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surface,
-        contentTextStyle: const TextStyle(color: AppColors.textPrimary),
+        contentTextStyle: GoogleFonts.inter(color: AppColors.textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
         ),
@@ -491,11 +532,12 @@ class AppTheme {
         todayForegroundColor: const WidgetStatePropertyAll(AppColors.accent),
         todayBorder: const BorderSide(color: AppColors.accent),
       ),
-      textTheme: base.textTheme.copyWith(
-        displayLarge: const TextStyle(
+      textTheme: inter.copyWith(
+        displayLarge: GoogleFonts.playfairDisplay(
           color: AppColors.textPrimary,
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
+          fontSize: 35,
+          fontWeight: FontWeight.w400,
+          height: 1.0,
         ),
         headlineMedium: AppTextStyles.heading,
         titleLarge: AppTextStyles.title,
@@ -535,7 +577,7 @@ class AppTheme {
             : AppColors.surface,
       ),
       entryModeIconColor: AppColors.accentSoft,
-      helpTextStyle: const TextStyle(color: AppColors.textMuted),
+      helpTextStyle: GoogleFonts.inter(color: AppColors.textMuted),
     );
   }
 
@@ -549,8 +591,8 @@ extension HabTrackShadColors on ShadColorScheme {
   Color get mintGlow => custom['mintGlow'] ?? primary;
   Color get mintSoft => custom['mintSoft'] ?? primary;
   Color get tealPulse => custom['tealPulse'] ?? secondary;
-  Color get success => custom['success'] ?? const Color(0xFF22C55E);
-  Color get warning => custom['warning'] ?? const Color(0xFFF59E0B);
+  Color get success => custom['success'] ?? AppColors.success;
+  Color get warning => custom['warning'] ?? AppColors.warning;
   Color get sidebar => custom['sidebar'] ?? background;
   Color get abyss => custom['abyss'] ?? background;
   Color get hairline => custom['hairline'] ?? border;

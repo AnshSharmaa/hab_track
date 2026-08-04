@@ -50,24 +50,14 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'TODOS',
-                          style: TextStyle(
-                            color: AppColors.textSubtle,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
+                          style: AppTextStyles.eyebrow,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Tasks & reminders',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: isPhone ? 22 : 26,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
-                          ),
+                          style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
                         ),
                       ],
                     ),
@@ -703,7 +693,7 @@ class _TodoCard extends StatelessWidget {
   final VoidCallback onReopen;
   final Future<void> Function(String subtaskId, bool completed)? onToggleSubtask;
 
-  static const _highPriorityColor = Color(0xFFB794F6);
+  static const _highPriorityColor = AppColors.highPriority;
 
   @override
   Widget build(BuildContext context) {

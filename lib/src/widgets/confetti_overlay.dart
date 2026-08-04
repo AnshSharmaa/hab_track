@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 class ConfettiOverlay extends StatefulWidget {
   final Widget child;
   final bool show;
@@ -16,20 +18,6 @@ class _ConfettiOverlayState extends State<ConfettiOverlay>
   late AnimationController _controller;
   final _particles = <_Sparkle>[];
   final _rng = Random();
-
-  final _sparkleColors = [
-    const Color(0xFFFFD700), // gold
-    const Color(0xFFFF69B4), // hot pink
-    const Color(0xFF00FFFF), // cyan
-    const Color(0xFFFF4500), // orange red
-    const Color(0xFF7FFF00), // chartreuse
-    const Color(0xFFFF00FF), // magenta
-    const Color(0xFF00BFFF), // deep sky blue
-    const Color(0xFFFFD700), // gold
-    const Color(0xFFFF1493), // deep pink
-    const Color(0xFFADFF2F), // green yellow
-    Colors.white,
-  ];
 
   @override
   void initState() {
@@ -60,7 +48,7 @@ class _ConfettiOverlayState extends State<ConfettiOverlay>
       _particles.add(_Sparkle(
         x: 0.3 + _rng.nextDouble() * 0.4,
         y: -0.15 - _rng.nextDouble() * 0.15,
-        color: _sparkleColors[_rng.nextInt(_sparkleColors.length)],
+        color: AppColors.confettiColors[_rng.nextInt(AppColors.confettiColors.length)],
         size: 10 + _rng.nextDouble() * 8,
         velocityX: (_rng.nextDouble() - 0.5) * 0.6,
         velocityY: 0.4 + _rng.nextDouble() * 0.6,
@@ -74,7 +62,7 @@ class _ConfettiOverlayState extends State<ConfettiOverlay>
       _particles.add(_Sparkle(
         x: 0.4 + _rng.nextDouble() * 0.2,
         y: -0.05 - _rng.nextDouble() * 0.1,
-        color: Colors.white.withValues(alpha: 0.7 + _rng.nextDouble() * 0.3),
+        color: AppColors.textPrimary.withValues(alpha: 0.7 + _rng.nextDouble() * 0.3),
         size: 1.5 + _rng.nextDouble() * 2.5,
         velocityX: (_rng.nextDouble() - 0.5) * 0.3,
         velocityY: 0.5 + _rng.nextDouble() * 0.4,

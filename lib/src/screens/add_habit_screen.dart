@@ -73,14 +73,14 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text(
           'Habit',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         leading: IconButton(
@@ -469,7 +469,7 @@ class _EmojiColorPicker extends StatelessWidget {
                             shape: BoxShape.circle,
                             border: colorIndex == i
                                 ? Border.all(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     width: 2.5,
                                   )
                                 : null,

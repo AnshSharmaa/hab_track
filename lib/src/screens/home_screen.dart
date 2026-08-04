@@ -66,12 +66,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 4),
               Text(
                 '$greeting 👋',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: isPhone ? 24 : 28,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.4,
-                ),
+                style: AppTextStyles.heading.copyWith(fontSize: isPhone ? 24 : 28),
               ),
               const SizedBox(height: 14),
               _dailyProgress(overviewAsync),
