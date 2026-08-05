@@ -1039,24 +1039,29 @@ class _FilterChip extends StatelessWidget {
     required this.onTap,
   });
 
+  static const _chipHeight = 32.0;
+
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: AppDecorations.glassChip(selected: selected),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? AppColors.accentSoft : AppColors.textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.1,
+    return Center(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: _chipHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          alignment: Alignment.center,
+          decoration: AppDecorations.glassChip(selected: selected),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? AppColors.accentSoft : AppColors.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
