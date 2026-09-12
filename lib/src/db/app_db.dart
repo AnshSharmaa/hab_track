@@ -183,7 +183,16 @@ class AppDb extends _$AppDb {
   static Future<AppDb> open() async {
     final docs = await getApplicationDocumentsDirectory();
     final file = File(p.join(docs.path, 'app_db.sqlite'));
-    return AppDb._(NativeDatabase(file));
+    return AppDb._(
+      NativeDatabase(
+        file,
+        // Notification quick-actions write from a background isolate using a
+        // second connection; give SQLite a busy timeout so brief overlap with
+        // the main-isolate connection can't fail writes with "database is
+        // locked".
+        setup: (rawDb) => rawDb.execute('PRAGMA busy_timeout = 3000'),
+      ),
+    );
   }
 
   @override
@@ -260,9 +269,7 @@ class AppDb extends _$AppDb {
   Future<List<Goal>> getAllGoals(String userId) =>
       (select(goals)
             ..where((g) => g.userId.equals(userId) & g.isArchived.equals(0))
-            ..orderBy([
-              (g) => OrderingTerm(expression: g.createdAt),
-            ]))
+            ..orderBy([(g) => OrderingTerm(expression: g.createdAt)]))
           .get();
 
   Future<bool> updateGoalEntry(Insertable<Goal> goal) =>
@@ -416,10 +423,8 @@ class AppDb extends _$AppDb {
       (select(todos)
             ..where((t) => t.userId.equals(userId) & t.isArchived.equals(0))
             ..orderBy([
-              (t) => OrderingTerm(
-                expression: t.isPinned,
-                mode: OrderingMode.desc,
-              ),
+              (t) =>
+                  OrderingTerm(expression: t.isPinned, mode: OrderingMode.desc),
               (t) => OrderingTerm(expression: t.sortOrder),
               (t) => OrderingTerm(expression: t.dueAt),
             ]))
@@ -463,10 +468,8 @@ class AppDb extends _$AppDb {
                   t.status.equals('open'),
             )
             ..orderBy([
-              (t) => OrderingTerm(
-                expression: t.isPinned,
-                mode: OrderingMode.desc,
-              ),
+              (t) =>
+                  OrderingTerm(expression: t.isPinned, mode: OrderingMode.desc),
               (t) => OrderingTerm(expression: t.sortOrder),
               (t) => OrderingTerm(expression: t.dueAt),
             ]))
@@ -513,19 +516,16 @@ class AppDb extends _$AppDb {
     await transaction(() async {
       await (delete(todoTagMap)..where((m) => m.todoId.equals(todoId))).go();
       for (final tagId in tagIds) {
-        await into(todoTagMap).insert(
-          TodoTagMapCompanion.insert(todoId: todoId, tagId: tagId),
-        );
+        await into(
+          todoTagMap,
+        ).insert(TodoTagMapCompanion.insert(todoId: todoId, tagId: tagId));
       }
     });
   }
 
   Future<List<TodoTag>> getTagsForTodo(String todoId) {
     final query = select(todoTags).join([
-      innerJoin(
-        todoTagMap,
-        todoTagMap.tagId.equalsExp(todoTags.id),
-      ),
+      innerJoin(todoTagMap, todoTagMap.tagId.equalsExp(todoTags.id)),
     ])..where(todoTagMap.todoId.equals(todoId));
     return query.map((row) => row.readTable(todoTags)).get();
   }
@@ -571,13 +571,9 @@ class AppDb extends _$AppDb {
         .get();
   }
 
-  Future<int> deleteTodoCompletionsForTodoOnDate(
-    String todoId,
-    String date,
-  ) {
-    return (delete(todoCompletions)..where(
-          (c) => c.todoId.equals(todoId) & c.date.equals(date),
-        ))
-        .go();
+  Future<int> deleteTodoCompletionsForTodoOnDate(String todoId, String date) {
+    return (delete(
+      todoCompletions,
+    )..where((c) => c.todoId.equals(todoId) & c.date.equals(date))).go();
   }
 }

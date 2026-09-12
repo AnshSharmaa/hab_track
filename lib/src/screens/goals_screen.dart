@@ -64,14 +64,13 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'GOALS',
-                          style: AppTextStyles.eyebrow,
-                        ),
+                        Text('GOALS', style: AppTextStyles.eyebrow),
                         const SizedBox(height: 4),
                         Text(
                           'Reward streaks',
-                          style: AppTextStyles.title.copyWith(fontSize: isPhone ? 22 : 26),
+                          style: AppTextStyles.title.copyWith(
+                            fontSize: isPhone ? 22 : 26,
+                          ),
                         ),
                       ],
                     ),
@@ -116,7 +115,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            error: (_, __) => const Text(
+                            error: (_, _) => const Text(
                               '0 goals',
                               style: TextStyle(
                                 color: AppColors.textPrimary,
@@ -155,18 +154,23 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       data: (statsMap) {
                         final habitsById = {for (final h in habits) h.id: h};
                         final goalProgress = goals
-                            .map((goal) => GoalProgress(
-                                  goal: goal,
-                                  habit: habitsById[goal.habitId],
-                                  currentStreak:
-                                      statsMap[goal.habitId]?.currentStreak ?? 0,
-                                  progress: (statsMap[goal.habitId]?.currentStreak ?? 0)
-                                      .clamp(0, goal.targetDays)
-                                      .toInt(),
-                                  targetDays: goal.targetDays,
-                                  unlocked: (statsMap[goal.habitId]?.currentStreak ?? 0) >=
-                                      goal.targetDays,
-                                ))
+                            .map(
+                              (goal) => GoalProgress(
+                                goal: goal,
+                                habit: habitsById[goal.habitId],
+                                currentStreak:
+                                    statsMap[goal.habitId]?.currentStreak ?? 0,
+                                progress:
+                                    (statsMap[goal.habitId]?.currentStreak ?? 0)
+                                        .clamp(0, goal.targetDays)
+                                        .toInt(),
+                                targetDays: goal.targetDays,
+                                unlocked:
+                                    (statsMap[goal.habitId]?.currentStreak ??
+                                        0) >=
+                                    goal.targetDays,
+                              ),
+                            )
                             .toList();
                         if (goalProgress.isEmpty) {
                           return _EmptyGoalState(onCreate: _openCreateSheet);
@@ -185,14 +189,44 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent)),
-                      error: (_, __) => const Center(child: Text('Could not load streaks', style: TextStyle(color: AppColors.danger))),
+                      loading: () => const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      error: (_, _) => const Center(
+                        child: Text(
+                          'Could not load streaks',
+                          style: TextStyle(color: AppColors.danger),
+                        ),
+                      ),
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent)),
-                    error: (_, __) => const Center(child: Text('Could not load habits', style: TextStyle(color: AppColors.danger))),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    error: (_, _) => const Center(
+                      child: Text(
+                        'Could not load habits',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
+                    ),
                   ),
-                  loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent)),
-                  error: (_, __) => const Center(child: Text('Could not load goals', style: TextStyle(color: AppColors.danger))),
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                  error: (_, _) => const Center(
+                    child: Text(
+                      'Could not load goals',
+                      style: TextStyle(color: AppColors.danger),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -228,7 +262,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Delete goal?', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(
+          'Delete goal?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: const Text(
           'This will remove the goal from your list and archive it.',
           style: TextStyle(color: AppColors.textMuted),
@@ -301,7 +338,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: _selectedHabitId,
+                      initialValue: _selectedHabitId,
                       decoration: const InputDecoration(
                         labelText: 'Linked habit',
                         labelStyle: TextStyle(color: AppColors.textMuted),
@@ -312,12 +349,15 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                               value: habit.id,
                               child: Text(
                                 habit.title,
-                                style: const TextStyle(color: AppColors.textPrimary),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                             ),
                           )
                           .toList(),
-                      onChanged: (value) => setModalState(() => _selectedHabitId = value),
+                      onChanged: (value) =>
+                          setModalState(() => _selectedHabitId = value),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -330,7 +370,11 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       ),
                       onChanged: (value) {
                         final parsed = int.tryParse(value);
-                        setModalState(() => _targetDays = parsed != null && parsed > 0 ? parsed : 7);
+                        setModalState(
+                          () => _targetDays = parsed != null && parsed > 0
+                              ? parsed
+                              : 7,
+                        );
                       },
                     ),
                     const SizedBox(height: 10),
@@ -364,14 +408,19 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.image_outlined, color: AppColors.accentSoft),
+                            const Icon(
+                              Icons.image_outlined,
+                              color: AppColors.accentSoft,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 _selectedImagePath == null
                                     ? 'Upload a reward image'
                                     : 'Image selected ✓',
-                                style: const TextStyle(color: AppColors.textPrimary),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                             ),
                           ],
@@ -387,7 +436,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                           height: 110,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                         ),
                       ),
                     ],
@@ -401,19 +450,22 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                               _rewardController.text.trim().isEmpty) {
                             return;
                           }
-                          final repo = await ref.read(goalRepositoryProvider.future);
+                          final repo = await ref.read(
+                            goalRepositoryProvider.future,
+                          );
                           await repo.addGoal(
                             userId: ref.read(userIdProvider),
                             title: _titleController.text.trim(),
                             habitId: _selectedHabitId!,
                             targetDays: _targetDays,
                             rewardTitle: _rewardController.text.trim(),
-                            rewardDescription: _descriptionController.text.trim().isEmpty
+                            rewardDescription:
+                                _descriptionController.text.trim().isEmpty
                                 ? null
                                 : _descriptionController.text.trim(),
                             rewardImageUrl: _selectedImagePath,
                           );
-                          if (!mounted) return;
+                          if (!sheetContext.mounted) return;
                           Navigator.pop(sheetContext);
                           _titleController.clear();
                           _rewardController.clear();
@@ -451,7 +503,9 @@ class _GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratio = progress.targetDays == 0 ? 0.0 : progress.progress / progress.targetDays;
+    final ratio = progress.targetDays == 0
+        ? 0.0
+        : progress.progress / progress.targetDays;
     final accent = progress.unlocked ? AppColors.success : AppColors.accent;
 
     return Container(
@@ -468,12 +522,19 @@ class _GoalCard extends StatelessWidget {
                   children: [
                     Text(
                       progress.goal.title,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15.5, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Linked habit: ${progress.habit?.title ?? "Unknown"}',
-                      style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12.5,
+                      ),
                     ),
                   ],
                 ),
@@ -481,14 +542,23 @@ class _GoalCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      progress.unlocked ? 'Unlocked' : '${progress.progress}/${progress.targetDays} days',
-                      style: TextStyle(color: accent, fontSize: 11.5, fontWeight: FontWeight.w700),
+                      progress.unlocked
+                          ? 'Unlocked'
+                          : '${progress.progress}/${progress.targetDays} days',
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -528,20 +598,29 @@ class _GoalCard extends StatelessWidget {
                     children: [
                       Text(
                         progress.goal.rewardTitle,
-                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      if (progress.goal.rewardDescription != null && progress.goal.rewardDescription!.isNotEmpty)
+                      if (progress.goal.rewardDescription != null &&
+                          progress.goal.rewardDescription!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             progress.goal.rewardDescription!,
-                            style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12.5,
+                            ),
                           ),
                         ),
                     ],
                   ),
                 ),
-                if (progress.goal.rewardImageUrl != null && progress.goal.rewardImageUrl!.isNotEmpty)
+                if (progress.goal.rewardImageUrl != null &&
+                    progress.goal.rewardImageUrl!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: ClipRRect(
@@ -558,8 +637,16 @@ class _GoalCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            progress.unlocked ? 'Reward unlocked — great work!' : 'Keep going to unlock this reward.',
-            style: TextStyle(color: progress.unlocked ? AppColors.success : AppColors.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600),
+            progress.unlocked
+                ? 'Reward unlocked — great work!'
+                : 'Keep going to unlock this reward.',
+            style: TextStyle(
+              color: progress.unlocked
+                  ? AppColors.success
+                  : AppColors.textMuted,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -569,13 +656,16 @@ class _GoalCard extends StatelessWidget {
 
 Widget _buildRewardImage(String imagePath) {
   final uri = Uri.tryParse(imagePath);
-  final isRemote = uri != null && uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
+  final isRemote =
+      uri != null &&
+      uri.hasScheme &&
+      (uri.scheme == 'http' || uri.scheme == 'https');
 
   if (isRemote) {
     return Image.network(
       imagePath,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
   }
 
@@ -587,7 +677,7 @@ Widget _buildRewardImage(String imagePath) {
   return Image.file(
     file,
     fit: BoxFit.cover,
-    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    errorBuilder: (_, _, _) => const SizedBox.shrink(),
   );
 }
 
@@ -638,17 +728,34 @@ class _EmptyGoalState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.emoji_events_outlined, size: 56, color: AppColors.accentSoft),
+          const Icon(
+            Icons.emoji_events_outlined,
+            size: 56,
+            color: AppColors.accentSoft,
+          ),
           const SizedBox(height: 12),
-          const Text('No goals yet', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+          const Text(
+            'No goals yet',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text('Create a streak reward and watch it unlock', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          const Text(
+            'Create a streak reward and watch it unlock',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          ),
           const SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: onCreate,
             icon: const Icon(Icons.add_rounded),
             label: const Text('Create your first goal'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: AppColors.textPrimary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.textPrimary,
+            ),
           ),
         ],
       ),

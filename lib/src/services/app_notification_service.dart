@@ -1,13 +1,18 @@
 import 'dart:convert';
+import 'dart:ui' show DartPluginRegistrant;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../db/app_db.dart';
 import '../providers.dart';
+import '../repositories/habit_repository.dart';
 import '../repositories/medication_repository.dart';
+import '../repositories/todo_repository.dart';
 
 const actionDone = 'action_done';
 const actionSnooze = 'action_snooze';
@@ -59,7 +64,14 @@ class AppNotificationService {
           ? (localTz as String)
           : localTz.identifier.toString();
       tz.setLocalLocation(tz.getLocation(timezoneId));
-    } catch (_) {}
+    } catch (error) {
+      // Scheduling continues with tz.local defaulting to UTC. Log it so wrong
+      // reminder times (off by the local UTC offset) are traceable.
+      debugPrint(
+        'Failed to resolve local timezone, reminders may fire at UTC times: '
+        '$error',
+      );
+    }
 
     final darwin = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -100,7 +112,7 @@ class AppNotificationService {
         macOS: darwin,
         iOS: darwin,
       ),
-      onDidReceiveNotificationResponse: _handleResponse,
+      onDidReceiveNotificationResponse: handleNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
 
@@ -317,15 +329,28 @@ class AppNotificationService {
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
           actions: <AndroidNotificationAction>[
-            const AndroidNotificationAction(actionDone, 'Mark done'),
+            const AndroidNotificationAction(
+              actionDone,
+              'Mark done',
+              showsUserInterface: true,
+            ),
             AndroidNotificationAction(
               actionSnooze,
               'Remind in ${snoozeMinutes}m',
+              showsUserInterface: true,
             ),
             if (entityType == 'todo')
-              const AndroidNotificationAction(actionDismiss, 'Dismiss')
+              const AndroidNotificationAction(
+                actionDismiss,
+                'Dismiss',
+                showsUserInterface: true,
+              )
             else
-              const AndroidNotificationAction(actionSkip, 'Skip today'),
+              const AndroidNotificationAction(
+                actionSkip,
+                'Skip today',
+                showsUserInterface: true,
+              ),
           ],
         ),
         macOS: DarwinNotificationDetails(
@@ -346,117 +371,225 @@ class AppNotificationService {
     );
   }
 
-  Future<void> _handleResponse(NotificationResponse response) async {
-    final payload = response.payload;
-    if (payload == null) return;
-    final decoded = jsonDecode(payload) as Map<String, dynamic>;
-    final entityType = decoded['entityType'] as String;
-    final entityId = decoded['entityId'] as String;
-    final time = decoded['time'] as String? ?? '';
-    final title = decoded['title'] as String? ?? 'Reminder';
-    final body = decoded['body'] as String? ?? '';
+  /// Handles a notification interaction end-to-end.
+  ///
+  /// Runs on the main isolate in all the common cases:
+  ///  * iOS/macOS action presses and body taps.
+  ///  * Android action presses (`showsUserInterface: true` foregrounds the
+  ///    app, so the response is delivered here) and Android body taps.
+  ///  * Cold starts, via getNotificationAppLaunchDetails in main.dart.
+  /// `appProviderContainer` exists, so the shared repositories are used and
+  /// UI providers are invalidated afterwards.
+  ///
+  /// The background-isolate fallback in notificationTapBackground only runs
+  /// if Android delivers an action without opening the app; in that fresh
+  /// isolate `appProviderContainer` is null and _processStandalone performs
+  /// the work against a short-lived standalone DB connection (the UI then
+  /// refreshes on the next resume).
+  Future<void> handleNotificationResponse(NotificationResponse response) async {
+    // Body taps only open the app — never record output or schedule snoozes.
+    if (response.notificationResponseType ==
+        NotificationResponseType.selectedNotification) {
+      return;
+    }
+
+    final parsed = _parseNotificationPayload(response);
+    if (parsed == null) return;
+
+    // Belt-and-braces removal of the notification the user interacted with.
+    // The Android ActionBroadcastReceiver already cancels it natively
+    // (cancelNotification: true). Deliberately skipped on iOS/macOS, where the
+    // id maps to the repeating UNCalendarNotificationTrigger — cancelling it
+    // would kill the daily recurrence of med/habit reminders.
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final responseId = response.id;
+      if (responseId != null && responseId >= 0) {
+        try {
+          await notifications.cancel(id: responseId);
+        } catch (_) {}
+      }
+    }
+
     final actionId = response.actionId ?? '';
-    final nagInterval =
-        (decoded['nagIntervalMinutes'] as num?)?.toInt() ?? 10;
-
     final container = appProviderContainer;
-    if (container == null) return;
+    if (container != null) {
+      await _processNotificationAction(parsed, actionId, container);
+    } else {
+      await _processStandalone(parsed, actionId);
+    }
+  }
 
-    if (entityType == 'todo') {
+  Future<void> _processNotificationAction(
+    NotificationPayloadData parsed,
+    String actionId,
+    ProviderContainer container,
+  ) async {
+    if (parsed.entityType == 'todo') {
       final repo = await container.read(todoRepositoryProvider.future);
-      final details = await repo.getTodoDetails(entityId);
-      if (details == null) {
-        // Missing or archived — drop any leftover schedules for this id.
-        await cancelTodoSchedules(entityId);
-        return;
-      }
-      if (actionId == actionDone) {
-        final updated = await repo.completeTodo(entityId);
-        await cancelTodoSchedules(entityId);
-        if (updated.status == 'open' && updated.nagEnabled == 1) {
-          await scheduleTodoNagChain(updated);
-        }
-      } else if (actionId == actionDismiss) {
-        await repo.dismissTodo(entityId);
-        await cancelTodoSchedules(entityId);
-      } else if (actionId == actionSnooze) {
-        await scheduleSnooze(
-          entityType: entityType,
-          entityId: entityId,
-          time: time,
-          title: title,
-          body: body,
-          snoozeMinutes: nagInterval,
-        );
-      }
+      await _processTodoAction(repo, parsed, actionId);
       container.invalidate(todosProvider);
       container.invalidate(homeTodosProvider);
       container.invalidate(homeOverviewProvider);
-      return;
-    }
-
-    if (entityType == 'medication') {
+    } else if (parsed.entityType == 'medication') {
       final repo = await container.read(medicationRepositoryProvider.future);
-      if (actionId == actionDone) {
-        await repo.markDose(
-          medicationId: entityId,
-          time: time,
-          status: 'taken',
-        );
-        await notifications.cancel(
-          id: _snoozeNotificationIdFor(entityType, entityId, time),
-        );
-      } else if (actionId == actionSkip) {
-        await repo.markDose(
-          medicationId: entityId,
-          time: time,
-          status: 'skipped',
-        );
-        await notifications.cancel(
-          id: _snoozeNotificationIdFor(entityType, entityId, time),
-        );
-      } else {
-        await repo.markDose(
-          medicationId: entityId,
-          time: time,
-          status: 'snoozed',
-        );
-        await scheduleSnooze(
-          entityType: entityType,
-          entityId: entityId,
-          time: time,
-          title: title,
-          body: body,
-        );
-      }
+      await _processMedicationAction(repo, parsed, actionId);
       container.invalidate(medicationsProvider);
-      return;
-    }
-
-    if (entityType == 'habit') {
+      container.invalidate(medicationDoseHistoryProvider);
+      container.invalidate(medicationAdherenceProvider(7));
+      container.invalidate(homeOverviewProvider);
+    } else if (parsed.entityType == 'habit') {
       final repo = await container.read(habitRepositoryProvider.future);
-      if (actionId == actionDone) {
-        await repo.markHabitCompletionForToday(entityId, true);
-        await notifications.cancel(
-          id: _snoozeNotificationIdFor(entityType, entityId, time),
-        );
-      } else if (actionId == actionSkip) {
-        await repo.markHabitCompletionForToday(entityId, false);
-        await notifications.cancel(
-          id: _snoozeNotificationIdFor(entityType, entityId, time),
-        );
-      } else {
-        await scheduleSnooze(
-          entityType: entityType,
-          entityId: entityId,
-          time: time,
-          title: title,
-          body: body,
-        );
-      }
+      await _processHabitAction(repo, parsed, actionId);
       container.invalidate(todayHabitsProvider);
       container.invalidate(todayHabitInstancesProvider);
       container.invalidate(habitsListProvider);
+      container.invalidate(homeOverviewProvider);
+    }
+  }
+
+  Future<void> _processMedicationAction(
+    MedicationRepository repo,
+    NotificationPayloadData parsed,
+    String actionId,
+  ) async {
+    if (actionId == actionDone) {
+      await repo.markDose(
+        medicationId: parsed.entityId,
+        time: parsed.time,
+        status: 'taken',
+      );
+      await notifications.cancel(
+        id: _snoozeNotificationIdFor(
+          parsed.entityType,
+          parsed.entityId,
+          parsed.time,
+        ),
+      );
+    } else if (actionId == actionSkip) {
+      await repo.markDose(
+        medicationId: parsed.entityId,
+        time: parsed.time,
+        status: 'skipped',
+      );
+      await notifications.cancel(
+        id: _snoozeNotificationIdFor(
+          parsed.entityType,
+          parsed.entityId,
+          parsed.time,
+        ),
+      );
+    } else if (actionId == actionSnooze) {
+      await repo.markDose(
+        medicationId: parsed.entityId,
+        time: parsed.time,
+        status: 'snoozed',
+      );
+      await scheduleSnooze(
+        entityType: parsed.entityType,
+        entityId: parsed.entityId,
+        time: parsed.time,
+        title: parsed.title,
+        body: parsed.body,
+      );
+    }
+  }
+
+  Future<void> _processHabitAction(
+    HabitRepository repo,
+    NotificationPayloadData parsed,
+    String actionId,
+  ) async {
+    if (actionId == actionDone) {
+      await repo.markHabitCompletionForToday(parsed.entityId, true);
+      await notifications.cancel(
+        id: _snoozeNotificationIdFor(
+          parsed.entityType,
+          parsed.entityId,
+          parsed.time,
+        ),
+      );
+    } else if (actionId == actionSkip) {
+      await repo.markHabitCompletionForToday(parsed.entityId, false);
+      await notifications.cancel(
+        id: _snoozeNotificationIdFor(
+          parsed.entityType,
+          parsed.entityId,
+          parsed.time,
+        ),
+      );
+    } else if (actionId == actionSnooze) {
+      await scheduleSnooze(
+        entityType: parsed.entityType,
+        entityId: parsed.entityId,
+        time: parsed.time,
+        title: parsed.title,
+        body: parsed.body,
+      );
+    }
+  }
+
+  NotificationPayloadData? _parseNotificationPayload(
+    NotificationResponse response,
+  ) {
+    return parseNotificationPayload(response.payload);
+  }
+
+  /// Background-isolate path: opens a short-lived DB connection, performs the
+  /// action, then closes it. No Riverpod container exists in this isolate.
+  Future<void> _processStandalone(
+    NotificationPayloadData parsed,
+    String actionId,
+  ) async {
+    AppDb? db;
+    try {
+      db = await AppDb.open();
+      if (parsed.entityType == 'todo') {
+        await _processTodoAction(TodoRepository(db), parsed, actionId);
+      } else if (parsed.entityType == 'medication') {
+        await _processMedicationAction(
+          MedicationRepository(db),
+          parsed,
+          actionId,
+        );
+      } else if (parsed.entityType == 'habit') {
+        await _processHabitAction(HabitRepository(db), parsed, actionId);
+      }
+    } catch (error) {
+      debugPrint('Background notification handling failed: $error');
+    } finally {
+      await db?.close();
+    }
+  }
+
+  Future<void> _processTodoAction(
+    TodoRepository repo,
+    NotificationPayloadData parsed,
+    String actionId,
+  ) async {
+    final details = await repo.getTodoDetails(parsed.entityId);
+    if (details == null) {
+      // Missing or archived — drop any leftover schedules for this id.
+      await cancelTodoSchedules(parsed.entityId);
+      return;
+    }
+    if (actionId == actionDone) {
+      final updated = await repo.completeTodo(parsed.entityId);
+      await cancelTodoSchedules(parsed.entityId);
+      if (updated.status == 'open' && updated.nagEnabled == 1) {
+        await scheduleTodoNagChain(updated);
+      }
+    } else if (actionId == actionDismiss) {
+      await repo.dismissTodo(parsed.entityId);
+      await cancelTodoSchedules(parsed.entityId);
+    } else if (actionId == actionSnooze) {
+      await scheduleSnooze(
+        entityType: parsed.entityType,
+        entityId: parsed.entityId,
+        time: parsed.time,
+        title: parsed.title,
+        body: parsed.body,
+        snoozeMinutes: parsed.nagInterval,
+      );
     }
   }
 
@@ -483,9 +616,21 @@ class AppNotificationService {
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
           actions: <AndroidNotificationAction>[
-            const AndroidNotificationAction(actionDone, 'Mark done'),
-            AndroidNotificationAction(actionSnooze, snoozeLabel),
-            const AndroidNotificationAction(actionDismiss, 'Dismiss'),
+            const AndroidNotificationAction(
+              actionDone,
+              'Mark done',
+              showsUserInterface: true,
+            ),
+            AndroidNotificationAction(
+              actionSnooze,
+              snoozeLabel,
+              showsUserInterface: true,
+            ),
+            const AndroidNotificationAction(
+              actionDismiss,
+              'Dismiss',
+              showsUserInterface: true,
+            ),
           ],
         ),
         macOS: const DarwinNotificationDetails(
@@ -530,9 +675,21 @@ class AppNotificationService {
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
           actions: const <AndroidNotificationAction>[
-            AndroidNotificationAction(actionDone, 'Mark done'),
-            AndroidNotificationAction(actionSnooze, 'Remind in 10m'),
-            AndroidNotificationAction(actionSkip, 'Skip today'),
+            AndroidNotificationAction(
+              actionDone,
+              'Mark done',
+              showsUserInterface: true,
+            ),
+            AndroidNotificationAction(
+              actionSnooze,
+              'Remind in 10m',
+              showsUserInterface: true,
+            ),
+            AndroidNotificationAction(
+              actionSkip,
+              'Skip today',
+              showsUserInterface: true,
+            ),
           ],
         ),
         macOS: const DarwinNotificationDetails(
@@ -590,8 +747,67 @@ class AppNotificationService {
   }
 }
 
+class NotificationPayloadData {
+  const NotificationPayloadData({
+    required this.entityType,
+    required this.entityId,
+    required this.time,
+    required this.title,
+    required this.body,
+    required this.nagInterval,
+  });
+
+  final String entityType;
+  final String entityId;
+  final String time;
+  final String title;
+  final String body;
+  final int nagInterval;
+}
+
+/// Parses a notification payload produced by [jsonEncode] in the scheduling
+/// helpers above. Returns null when the payload is absent, malformed, or
+/// missing the required entity coordinates — callers must treat null as "no
+/// actionable content". A malformed or stale payload must never terminate
+/// handling before the action is persisted or leftover schedules are cleaned.
+NotificationPayloadData? parseNotificationPayload(String? payload) {
+  if (payload == null || payload.isEmpty) return null;
+  try {
+    final decoded = jsonDecode(payload);
+    if (decoded is! Map<String, dynamic>) return null;
+    final entityType = decoded['entityType'];
+    final entityId = decoded['entityId'];
+    if (entityType is! String || entityId is! String) return null;
+    return NotificationPayloadData(
+      entityType: entityType,
+      entityId: entityId,
+      time: decoded['time'] is String ? decoded['time'] as String : '',
+      title: decoded['title'] is String
+          ? decoded['title'] as String
+          : 'Reminder',
+      body: decoded['body'] is String ? decoded['body'] as String : '',
+      nagInterval: decoded['nagIntervalMinutes'] is num
+          ? (decoded['nagIntervalMinutes'] as num).toInt()
+          : 10,
+    );
+  } catch (error) {
+    debugPrint('Notification payload parse failed: $error');
+    return null;
+  }
+}
+
 @pragma('vm:entry-point')
 Future<void> notificationTapBackground(NotificationResponse response) async {
-  await AppNotificationService.instance.initialize();
-  await AppNotificationService.instance._handleResponse(response);
+  try {
+    // Runs in a fresh isolate spawned by the plugin's ActionBroadcastReceiver
+    // (only reached as a fallback now — Android action presses normally open
+    // the app and are handled on the main isolate). Without this, platform
+    // channels (path_provider, the notification plugin itself) can fail with
+    // MissingPluginException in the spawned engine.
+    DartPluginRegistrant.ensureInitialized();
+    await AppNotificationService.instance.initialize();
+    await AppNotificationService.instance.handleNotificationResponse(response);
+  } catch (error) {
+    debugPrint('Background notification tap handling failed: $error');
+  }
 }

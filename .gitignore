@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# local design docs
+DESIGN.md
+HABTRACK_DESIGN.md
+TODO.md

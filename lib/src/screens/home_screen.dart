@@ -55,242 +55,248 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Text(
-                today,
-                style: const TextStyle(
-                  color: AppColors.textSubtle,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                Text(
+                  today,
+                  style: const TextStyle(
+                    color: AppColors.textSubtle,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$greeting 👋',
-                style: AppTextStyles.heading.copyWith(fontSize: isPhone ? 24 : 28),
-              ),
-              const SizedBox(height: 14),
-              _dailyProgress(overviewAsync),
-              const SizedBox(height: 12),
-              // Badge summary row
-              statsAsync.when(
-                data: (stats) {
-                  final badges = stats.values
-                      .where((s) => s.currentStreak >= 7)
-                      .length;
-                  if (badges == 0) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: AppDecorations.glassCard(),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.emoji_events_rounded,
-                            color: AppColors.warning,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '$badges active badge${badges == 1 ? '' : 's'}',
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                const SizedBox(height: 4),
+                Text(
+                  '$greeting 👋',
+                  style: AppTextStyles.heading.copyWith(
+                    fontSize: isPhone ? 24 : 28,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _dailyProgress(overviewAsync),
+                const SizedBox(height: 12),
+                // Badge summary row
+                statsAsync.when(
+                  data: (stats) {
+                    final badges = stats.values
+                        .where((s) => s.currentStreak >= 7)
+                        .length;
+                    if (badges == 0) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: AppDecorations.glassCard(),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.emoji_events_rounded,
+                              color: AppColors.warning,
+                              size: 18,
                             ),
-                          ),
-                          const Spacer(),
-                          ...stats.entries
-                              .where((e) => e.value.currentStreak >= 7)
-                              .take(3)
-                              .map((e) => Padding(
+                            const SizedBox(width: 8),
+                            Text(
+                              '$badges active badge${badges == 1 ? '' : 's'}',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            ...stats.entries
+                                .where((e) => e.value.currentStreak >= 7)
+                                .take(3)
+                                .map(
+                                  (e) => Padding(
                                     padding: const EdgeInsets.only(left: 4),
                                     child: AchievementBadge(
                                       streak: e.value.currentStreak,
                                       size: 24,
                                     ),
-                                  )),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: AppDecorations.glassCard(elevated: true),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _QuickAction(
-                        label: 'Add habit',
-                        icon: Icons.add_task_rounded,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const AddHabitScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _QuickAction(
-                        label: 'Add todo',
-                        icon: Icons.checklist_rounded,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const AddTodoScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _QuickAction(
-                        label: 'Add med',
-                        icon: Icons.medication_rounded,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const AddMedicationScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Today's full list",
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: overviewAsync.when(
-                  skipLoadingOnReload: true,
-                  skipLoadingOnRefresh: true,
-                  data: (overview) {
-                    final doneIds =
-                        overview.doneHabits.map((h) => h.id).toSet();
-                    final todaysHabits = overview.habits
-                        .where(
-                          (h) => HabitRepository.isHabitScheduledOn(
-                            h.recurrence,
-                            weekdayKey(DateTime.now()),
-                          ),
-                        )
-                        .toList();
-                    final items = <_HomeEntry>[
-                      ...overview.homeTodos.map((todo) {
-                        final due = DateTime.fromMillisecondsSinceEpoch(
-                          todo.todo.dueAt,
-                        );
-                        final dueLabel = todo.todo.allDay == 1
-                            ? DateFormat('MMM d').format(due)
-                            : DateFormat('h:mm a').format(due);
-                        final done =
-                            todo.todo.status != 'open' ||
-                            overview.todoIdsCompletedToday.contains(
-                              todo.todo.id,
-                            );
-                        final overdueLabel =
-                            !done && todo.isOverdue ? 'Overdue · ' : '';
-                        return _HomeEntry.todo(
-                          id: todo.todo.id,
-                          title: todo.todo.title,
-                          subtitle: '$overdueLabel$dueLabel',
-                          done: done,
-                          emoji: todo.todo.emoji.isNotEmpty
-                              ? todo.todo.emoji
-                              : '☑️',
-                          colorIndex: todo.todo.colorIndex,
-                        );
-                      }),
-                      ...todaysHabits.map(
-                        (habit) => _HomeEntry.habit(
-                          id: habit.id,
-                          title: habit.title,
-                          subtitle: (habit.notes ?? '').trim(),
-                          done: doneIds.contains(habit.id),
-                          emoji: habit.emoji,
-                          colorIndex: habit.colorIndex,
+                                  ),
+                                ),
+                          ],
                         ),
                       ),
-                      ...overview.medications.map((med) {
-                        final statuses =
-                            overview.doseStatusMap[med.medication.id] ??
-                            const <String, String>{};
-                        final allTaken =
-                            med.times.isNotEmpty &&
-                            med.times.every((t) => statuses[t] == 'taken');
-                        return _HomeEntry.med(
-                          id: med.medication.id,
-                          title: med.medication.name,
-                          subtitle: med.medication.dosage ?? '',
-                          times: med.times.length,
-                          scheduleTimes: med.times,
-                          done: allTaken,
-                          emoji: '💊',
-                          colorIndex: 0,
-                        );
-                      }),
-                    ];
-                    if (items.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No habits, todos, or meds for today.',
-                          style: TextStyle(color: AppColors.textMuted),
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _HomeItemCard(
-                            entry: items[index],
-                            onToggle: () => _toggleEntry(items[index]),
-                          ),
-                        );
-                      },
                     );
                   },
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.accent,
-                    ),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: AppDecorations.glassCard(elevated: true),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'Add habit',
+                          icon: Icons.add_task_rounded,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AddHabitScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'Add todo',
+                          icon: Icons.checklist_rounded,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AddTodoScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'Add med',
+                          icon: Icons.medication_rounded,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AddMedicationScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  error: (_, _) => const Center(
-                    child: Text(
-                      'Could not load today data.',
-                      style: TextStyle(color: AppColors.danger),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Today's full list",
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: overviewAsync.when(
+                    skipLoadingOnReload: true,
+                    skipLoadingOnRefresh: true,
+                    data: (overview) {
+                      final doneIds = overview.doneHabits
+                          .map((h) => h.id)
+                          .toSet();
+                      final todaysHabits = overview.habits
+                          .where(
+                            (h) => HabitRepository.isHabitScheduledOn(
+                              h.recurrence,
+                              weekdayKey(DateTime.now()),
+                            ),
+                          )
+                          .toList();
+                      final items = <_HomeEntry>[
+                        ...overview.homeTodos.map((todo) {
+                          final due = DateTime.fromMillisecondsSinceEpoch(
+                            todo.todo.dueAt,
+                          );
+                          final dueLabel = todo.todo.allDay == 1
+                              ? DateFormat('MMM d').format(due)
+                              : DateFormat('h:mm a').format(due);
+                          final done =
+                              todo.todo.status != 'open' ||
+                              overview.todoIdsCompletedToday.contains(
+                                todo.todo.id,
+                              );
+                          final overdueLabel = !done && todo.isOverdue
+                              ? 'Overdue · '
+                              : '';
+                          return _HomeEntry.todo(
+                            id: todo.todo.id,
+                            title: todo.todo.title,
+                            subtitle: '$overdueLabel$dueLabel',
+                            done: done,
+                            emoji: todo.todo.emoji.isNotEmpty
+                                ? todo.todo.emoji
+                                : '☑️',
+                            colorIndex: todo.todo.colorIndex,
+                          );
+                        }),
+                        ...todaysHabits.map(
+                          (habit) => _HomeEntry.habit(
+                            id: habit.id,
+                            title: habit.title,
+                            subtitle: (habit.notes ?? '').trim(),
+                            done: doneIds.contains(habit.id),
+                            emoji: habit.emoji,
+                            colorIndex: habit.colorIndex,
+                          ),
+                        ),
+                        ...overview.medications.map((med) {
+                          final statuses =
+                              overview.doseStatusMap[med.medication.id] ??
+                              const <String, String>{};
+                          final allTaken =
+                              med.times.isNotEmpty &&
+                              med.times.every((t) => statuses[t] == 'taken');
+                          return _HomeEntry.med(
+                            id: med.medication.id,
+                            title: med.medication.name,
+                            subtitle: med.medication.dosage ?? '',
+                            times: med.times.length,
+                            scheduleTimes: med.times,
+                            done: allTaken,
+                            emoji: '💊',
+                            colorIndex: 0,
+                          );
+                        }),
+                      ];
+                      if (items.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No habits, todos, or meds for today.',
+                            style: TextStyle(color: AppColors.textMuted),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _HomeItemCard(
+                              entry: items[index],
+                              onToggle: () => _toggleEntry(items[index]),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    error: (_, _) => const Center(
+                      child: Text(
+                        'Could not load today data.',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _dailyProgress(AsyncValue<HomeOverviewData> overviewAsync) {
@@ -435,9 +441,7 @@ class _HomeItemCard extends StatelessWidget {
     final accentColor = HabitColors.getColor(entry.colorIndex);
     final statusColor = entry.done
         ? accentColor
-        : (!entry.done &&
-              isTodo &&
-              entry.subtitle.startsWith('Overdue'))
+        : (!entry.done && isTodo && entry.subtitle.startsWith('Overdue'))
         ? AppColors.danger
         : AppColors.textMuted;
 
@@ -506,7 +510,8 @@ class _HomeItemCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: !entry.done &&
+                      color:
+                          !entry.done &&
                               isTodo &&
                               entry.subtitle.startsWith('Overdue')
                           ? AppColors.danger
