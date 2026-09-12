@@ -13,6 +13,7 @@ import '../providers.dart';
 import '../repositories/habit_repository.dart';
 import '../repositories/medication_repository.dart';
 import '../repositories/todo_repository.dart';
+import '../theme/app_theme.dart';
 
 const actionDone = 'action_done';
 const actionSnooze = 'action_snooze';
@@ -21,6 +22,24 @@ const actionDismiss = 'action_dismiss';
 
 const _todoNagMaxSlots = 24;
 const _todoNagWindowHours = 6;
+
+/// Tab the app should surface after a notification body tap (deep link).
+/// AppShell consumes the request and resets it to null. Indices match
+/// AppShell's page order: 0 Home, 1 Today, 2 Todos, 3 Goals, 4 Medications.
+final notificationTabRequest = ValueNotifier<int?>(null);
+
+int _tabForEntity(String entityType) {
+  switch (entityType) {
+    case 'todo':
+      return 2; // TodosScreen
+    case 'habit':
+      return 1; // TodayScreen
+    case 'medication':
+      return 4; // MedicationsScreen
+    default:
+      return 0; // HomeScreen
+  }
+}
 
 class AppNotificationService {
   AppNotificationService._();
@@ -104,7 +123,7 @@ class AppNotificationService {
         ),
       ],
     );
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const android = AndroidInitializationSettings('ic_notification');
 
     await notifications.initialize(
       settings: InitializationSettings(
@@ -129,6 +148,9 @@ class AppNotificationService {
     await androidPlugin?.createNotificationChannel(_habitsChannel);
     await androidPlugin?.createNotificationChannel(_todosChannel);
     await androidPlugin?.requestNotificationsPermission();
+    // Full-screen intents for medication alarms. Android 14+ gates this
+    // behind a user grant; the system falls back to heads-up if denied.
+    await androidPlugin?.requestFullScreenIntentPermission();
     await notifications
         .resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin
@@ -146,6 +168,7 @@ class AppNotificationService {
         channelId: _medsChannel.id,
         channelName: _medsChannel.name,
         channelDescription: _medsChannel.description ?? '',
+        fullScreenIntent: true,
         title: 'Medication reminder',
         body: '${med.medication.name} ${med.medication.dosage ?? ''}'.trim(),
         payload: {
@@ -328,6 +351,7 @@ class AppNotificationService {
           importance: Importance.max,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
+          color: AppColors.accentSoft,
           actions: <AndroidNotificationAction>[
             const AndroidNotificationAction(
               actionDone,
@@ -387,13 +411,19 @@ class AppNotificationService {
   /// the work against a short-lived standalone DB connection (the UI then
   /// refreshes on the next resume).
   Future<void> handleNotificationResponse(NotificationResponse response) async {
+    final parsed = _parseNotificationPayload(response);
+
     // Body taps only open the app — never record output or schedule snoozes.
+    // Per Android guidance, land the user on the content most relevant to the
+    // notification (AppShell consumes the tab request).
     if (response.notificationResponseType ==
         NotificationResponseType.selectedNotification) {
+      if (parsed != null) {
+        notificationTabRequest.value = _tabForEntity(parsed.entityType);
+      }
       return;
     }
 
-    final parsed = _parseNotificationPayload(response);
     if (parsed == null) return;
 
     // Belt-and-braces removal of the notification the user interacted with.
@@ -615,6 +645,7 @@ class AppNotificationService {
           importance: Importance.max,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
+          color: AppColors.accentSoft,
           actions: <AndroidNotificationAction>[
             const AndroidNotificationAction(
               actionDone,
@@ -660,6 +691,7 @@ class AppNotificationService {
     required String title,
     required String body,
     required Map<String, dynamic> payload,
+    bool fullScreenIntent = false,
   }) async {
     await notifications.zonedSchedule(
       id: id,
@@ -674,6 +706,8 @@ class AppNotificationService {
           importance: Importance.max,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
+          color: AppColors.accentSoft,
+          fullScreenIntent: fullScreenIntent,
           actions: const <AndroidNotificationAction>[
             AndroidNotificationAction(
               actionDone,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/app_notification_service.dart';
 import '../theme/app_theme.dart';
 import 'goals_screen.dart';
 import 'history_screen.dart';
@@ -17,6 +18,26 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyTabRequest(); // consume a request that arrived before shell mounted
+    notificationTabRequest.addListener(_applyTabRequest);
+  }
+
+  @override
+  void dispose() {
+    notificationTabRequest.removeListener(_applyTabRequest);
+    super.dispose();
+  }
+
+  void _applyTabRequest() {
+    final tab = notificationTabRequest.value;
+    notificationTabRequest.value = null;
+    if (tab == null || tab == _selectedIndex) return;
+    setState(() => _selectedIndex = tab);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,9 +136,7 @@ class _Sidebar extends StatelessWidget {
       width: 232,
       decoration: BoxDecoration(
         color: AppColors.sidebar, // Black Hole — darkest UI
-        border: const Border(
-          right: BorderSide(color: AppColors.borderGlass),
-        ),
+        border: const Border(right: BorderSide(color: AppColors.borderGlass)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,10 +220,7 @@ class _Sidebar extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Text(
               'v0.1.0',
-              style: TextStyle(
-                color: AppColors.asteroid,
-                fontSize: 11,
-              ),
+              style: TextStyle(color: AppColors.asteroid, fontSize: 11),
             ),
           ),
         ],

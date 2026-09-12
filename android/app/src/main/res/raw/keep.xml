@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keep notification resources: R8 resource shrinking can otherwise strip
+     the launcher/notification icons, making notifications silently fail. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/*,@mipmap/*" />
